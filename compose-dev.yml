@@ -1,0 +1,20 @@
+services:
+  mikroutils:
+    build:
+      target: development
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: /var/www/html
+    volumes:
+      - ./docker/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    environment:
+      PHP_DISPLAY_ERRORS: "1"
+    ports:
+      - "3434:80"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    extends:
+      file: compose-base.yml
+      service: mikroutils

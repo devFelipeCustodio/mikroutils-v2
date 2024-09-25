@@ -1,0 +1,8 @@
+services:
+  mikroutils:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DOCUMENT_ROOT: "/public"
+
