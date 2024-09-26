@@ -21,14 +21,16 @@ class GatewayFacadeTest extends TestCase
     {
         $this->expectException(Exception::class);
         $config = GatewayFacade::createConfig(0);
-        GatewayFacade::connect($config);
+        $client = GatewayFacade::createClient($config);
+        GatewayFacade::connect($client);
     }
 
 
     private function configureAndConnect(): void
     {
         $config = GatewayFacade::createConfig($_SERVER["MK_TEST_IP"]);
-        $this->gw = GatewayFacade::connect($config);
+        $client = GatewayFacade::createClient($config);
+        $this->gw = GatewayFacade::connect($client);
     }
 
 
@@ -48,42 +50,42 @@ class GatewayFacadeTest extends TestCase
     public function testePegaInterfaceUsuarioValida(): void
     {
         $this->configureAndConnect();
-        $result = $this->gw->findUserInterface($_SERVER["MK_TEST_USER"]);
+        $result = $this->gw->findPPPoEInterfaceOverview($_SERVER["MK_TEST_USER"]);
         $this->assertNotEmpty($result);
     }
 
     public function testePegaInterfaceUsuarioInvalida(): void
     {
         $this->configureAndConnect();
-        $result = $this->gw->findUserInterface("invalida");
+        $result = $this->gw->findPPPoEInterfaceOverview("invalida");
         $this->assertNull($result);
     }
 
     public function testePegaQueueUsuarioValida(): void
     {
         $this->configureAndConnect();
-        $result = $this->gw->findUserQueue($_SERVER["MK_TEST_USER"]);
+        $result = $this->gw->findPPPoEQueue($_SERVER["MK_TEST_USER"]);
         $this->assertNotNull($result);
     }
 
     public function testePegaQueueUsuarioInvalida(): void
     {
         $this->configureAndConnect();
-        $result = $this->gw->findUserQueue("invalida");
+        $result = $this->gw->findPPPoEQueue("invalida");
         $this->assertNull($result);
     }
 
     public function testePegaTrafficUsuarioValida(): void
     {
         $this->configureAndConnect();
-        $result = $this->gw->findUserTraffic($_SERVER["MK_TEST_USER"]);
+        $result = $this->gw->findPPPoEInterface($_SERVER["MK_TEST_USER"]);
         $this->assertNotNull($result);
     }
 
     public function testePegaTrafficUsuarioInvalida(): void
     {
         $this->configureAndConnect();
-        $result = $this->gw->findUserTraffic("invalida");
+        $result = $this->gw->findPPPoEInterface("invalida");
         $this->assertNull($result);
     }
 

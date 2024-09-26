@@ -2,7 +2,6 @@
 
 namespace App;
 
-use Exception;
 use \RouterOS\Config;
 use \RouterOS\Client;
 use \RouterOS\Query;
@@ -16,14 +15,8 @@ final class GatewayFacade
         $this->client = $client;
     }
 
-    public static function connect(Config $config): GatewayFacade
+    public static function connect(Client $client): GatewayFacade
     {
-        $client = null;
-        try {
-            $client = new Client($config);
-        } catch (\Throwable $th) {
-            throw new Exception("Falha na conexão: " . $th->getMessage());
-        }
         return new GatewayFacade($client);
     }
 
@@ -46,13 +39,26 @@ final class GatewayFacade
         return new Config($params);
     }
 
+    public static function createClient(Config $config): Client {
+        return new Client($config);
+    }
+
+    /**
+     * @return array|null
+     */
     public function getActivePPPUsers()
     {
         $query = new Query("/ppp/active/print");
         return $this->client->query($query)->read();
     }
 
-    private function isValidResult($result)
+    /**
+     * Método responsável por validar a resposta de uma query 
+     * realizada com o parâmetro "numbers".
+     * @param array $result Resposta da query.
+     * @return bool Retorna `false` caso o item buscado não exista, e `true` em caso de sucesso
+     */
+    private function itemExists($result)
     {
         if (
             key_exists("after", $result) &&
@@ -64,37 +70,50 @@ final class GatewayFacade
         return true;
     }
 
-    public function findUserInterface(string $user)
+    /**
+     * @param string $name Nome do usuário PPPoE.
+     * @return array|null
+     */
+    public function findPPPoEInterfaceOverview(string $name)
     {
         $query = new Query("/interface/pppoe-server/monitor");
-        $query->equal("numbers", "<pppoe-$user>")->equal("once");
+        $query->equal("numbers", "<pppoe-$name>")->equal("once");
         $result =  $this->client->query($query)->read();
 
-        if (!$this->isValidResult($result))
+        if (!$this->itemExists($result))
             return null;
 
         return $result[0] ?? null;
     }
 
-    public function findUserQueue(string $user)
+    /**
+     * @param string $target Nome do usuário PPPoE alvo da queue.
+     * @return array|null
+     */
+    public function findPPPoEQueue(string $target)
     {
         $query = new Query("/queue/simple/print");
-        $query = $query->where("target", "<pppoe-$user>");
-        $result = $this->client->query($query)->read();
-        return $result[0] ?? null;
-    }
-
-    public function findUserTraffic(string $user)
-    {
-        $query = new Query("/interface/getall");
-        $query = $query->where("name", "<pppoe-$user>");
+        $query = $query->where("target", "<pppoe-$target>");
         $result = $this->client->query($query)->read();
         return $result[0] ?? null;
     }
 
     /**
-     * Pega a identidade configurada no sistema.
-     * @return string
+     * @param string $name Nome do usuário PPPoE.
+     * @return array|null
+     */
+    public function findPPPoEInterface($name)
+    {
+        $query = new Query("/interface/getall");
+        $query = $query->where("name", "<pppoe-$name>");
+        $result = $this->client->query($query)->read();
+        return $result[0] ?? null;
+    }
+
+    /**
+     * @return string Retorna a identidade configurada no equipamento. 
+     * Não é possível deixar a identidade me branco. 
+     * "Mikrotik" é a identidade padrão.
      */
     public function getIdentity()
     {
