@@ -8,11 +8,8 @@ use \RouterOS\Query;
 
 final class GatewayFacade
 {
-    private Client $client;
-
-    private function __construct(Client $client)
+    private function __construct(private Client $client)
     {
-        $this->client = $client;
     }
 
     public static function connect(Client $client): GatewayFacade
