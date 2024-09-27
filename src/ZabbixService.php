@@ -1,5 +1,8 @@
 <?php
 
+namespace App;
+
+use Exception;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ZabbixService
