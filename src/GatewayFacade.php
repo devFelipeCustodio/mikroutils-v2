@@ -6,11 +6,9 @@ use \RouterOS\Config;
 use \RouterOS\Client;
 use \RouterOS\Query;
 
-final class GatewayFacade
+class GatewayFacade
 {
-    private function __construct(private Client $client)
-    {
-    }
+    private function __construct(private Client $client) {}
 
     public static function connect(Client $client): GatewayFacade
     {
@@ -36,7 +34,8 @@ final class GatewayFacade
         return new Config($params);
     }
 
-    public static function createClient(Config $config): Client {
+    public static function createClient(Config $config): Client
+    {
         return new Client($config);
     }
 
