@@ -117,4 +117,20 @@ class GatewayFacade
         $result = $this->client->query($query)->read();
         return $result[0]["name"];
     }
+
+    public function findLogsWith($name, $mac)
+    {
+        $query = new Query('/log/print');
+        $logs = $this->client->query($query)->read();
+
+        $result = array_filter(array_reverse($logs), function ($log) use (&$name, &$mac) {
+            if (
+                preg_match("/$name/i", $log['message']) ||
+                preg_match("/$mac/i", $log['message'])
+            ) {
+                return true;
+            }
+        });
+        return $result;
+    }
 }
