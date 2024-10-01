@@ -5,6 +5,7 @@ namespace App\Tests;
 use App\GatewayFacade;
 use App\PPPUserService;
 use App\ZabbixService;
+use Exception;
 use PHPUnit\Framework\TestCase;
 
 class PPPUserServiceTest extends TestCase
@@ -16,18 +17,20 @@ class PPPUserServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->zabbix = $this->createStub(ZabbixService::class);
-        $this->zabbix->method("fetchHosts")->willReturn([
-            "result" => [
-                "host" => "MKT-DQX-XRM-RTB-GW-AFINET",
-                "interfaces" => ["ip" => $_SERVER["MK_TEST_IP"]]
+        $this->zabbix->method("fetchHosts")->willReturn(
+            [
+                "result" => [
+                    "host" => "MKT-DQX-XRM-RTB-GW-AFINET",
+                    "interfaces" => ["ip" => $_SERVER["MK_TEST_IP"]]
+                ]
             ]
-        ]);
+        );
 
         $this->gateway = $this->createStub(GatewayFacade::class);
         $this->gateway->method("getActivePPPUsers")->willReturn([
             [
                 ".id" => "*80009420",
-                "name" => "wf.josearaujo@afinet.com.br",
+                "name" => "jose@afinet.com.br",
                 "service" => "pppoe",
                 "caller-id" => "40:ED:00:FD:FA:F2",
                 "address" => "179.127.194.184",
@@ -52,6 +55,29 @@ class PPPUserServiceTest extends TestCase
                 "radius" => true
             ]
         ]);
+        $this->gateway->method("findPPPoEInterfaceOverview")->willReturn(
+            [
+                "uptime" => "21h27s",
+                "user" => "teste@afinet.com.br",
+                "caller-id" => "40:ED:00:FD:FA:F2",
+                "interface" => "VLAN-118",
+                "local-address" => "10.0.0.69",
+                "remote-address" => "170.0.0.2"
+            ]
+        );
+        $this->gateway->method("findPPPoEInterface")->willReturn(
+            [
+                "rx-byte" => "6526849744",
+                "tx-byte" => "16681180963",
+                "last-link-up-time" => "sep/30/2024 21:35:18"
+            ]
+        );
+
+        $this->gateway->method("findPPPoEQueue")->willReturn(
+            [
+                "max-limit" => "160000000/520000000"
+            ]
+        );
         /** @disregard  */
         $this->PPPUserService = new PPPUserService($this->zabbix, $this->gateway);
     }
@@ -73,5 +99,17 @@ class PPPUserServiceTest extends TestCase
     {
         $results = $this->PPPUserService->findUserBy("ip", "179.127.194.184");
         $this->assertCount(1, $results);
+    }
+
+    public function testaPegaUsuarioCompletoValida(): void
+    {
+        $results = $this->PPPUserService->getFullUserDataByName("teste@afinet.com.br");
+        $this->assertNotEmpty($results);
+    }
+
+    public function testaPegaUsuarioCompletoInvalida(): void
+    {
+        $this->expectException(Exception::class);
+        $this->PPPUserService->getFullUserDataByName("invalida");
     }
 }
