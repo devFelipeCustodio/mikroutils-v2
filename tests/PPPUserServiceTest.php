@@ -110,6 +110,7 @@ class PPPUserServiceTest extends TestCase
     public function testaPegaUsuarioCompletoInvalida(): void
     {
         $this->expectException(Exception::class);
+        $this->gateway->method("findPPPoEInterfaceOverview")->willThrowException(new Exception());
         $this->PPPUserService->getFullUserDataByName("invalida");
     }
 }

@@ -96,10 +96,10 @@ class GatewayFacadeTest extends TestCase
         $this->assertIsString($result);
     }
 
-    public function testPegaLogs(): void
+    public function testePegaLogs(): void
     {
         $this->configureAndConnect();
-        $result = $this->gw->findLogsWith("maria", "A0:A0");
+        $result = $this->gw->findLogsWith($_SERVER["MK_TEST_USER"], "A0:A0");
         $this->assertNotEmpty($result);
     }
 }
