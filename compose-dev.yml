@@ -1,5 +1,5 @@
 services:
-  mikroutils:
+  app:
     build:
       target: development
     develop:
@@ -9,12 +9,26 @@ services:
           target: /var/www/html
     volumes:
       - ./docker/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./:/var/www/html/
     environment:
       PHP_DISPLAY_ERRORS: "1"
+      APP_UID: 1000
+      APP_GID: 1000
     ports:
       - "3434:80"
     extra_hosts:
       - host.docker.internal:host-gateway
     extends:
       file: compose-base.yml
-      service: mikroutils
+      service: app
+
+  database:
+    image: postgres:16-alpine
+    ports:
+      - "5432"
+    env_file: .env.dev
+    volumes:
+      - database_data:/var/lib/postgresql/data:rw
+
+volumes:
+  database_data:

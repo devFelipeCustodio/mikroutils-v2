@@ -1,12 +1,12 @@
 services:
-  mikroutils:
+  app:
     build:
       target: production
     ports:
       - "80:80"
     extends:
       file: compose-base.yml
-      service: mikroutils
+      service: app
     networks:
       - dokploy-network
 
