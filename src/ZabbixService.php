@@ -26,7 +26,7 @@ class ZabbixService
 
     public function fetchHosts(): array
     {
-        $params = ["groupids" => [$this->groupID], "output" => ["host"], "selectInterfaces" => ["ip"]];
+        $params = ["groupids" => $this->groupID, "output" => ["host"], "selectInterfaces" => ["ip"]];
 
         $data = [
 
@@ -41,7 +41,7 @@ class ZabbixService
         $response = $this->client->request(
             'POST',
             $this->url,
-            ["body" => $data]
+            ["json" => $data]
         );
 
         $statusCode = $response->getStatusCode();
