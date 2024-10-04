@@ -79,7 +79,7 @@ class PPPUserServiceTest extends TestCase
             ]
         );
         /** @disregard  */
-        $this->PPPUserService = new PPPUserService($this->zabbix, $this->gateway);
+        $this->PPPUserService = new PPPUserService($this->gateway);
     }
 
     public function testaBuscaUsuarioPorNome(): void
