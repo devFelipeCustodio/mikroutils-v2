@@ -16,27 +16,52 @@ class SearchController extends AbstractController
     public function index(Request $request, ZabbixService $zabbix): Response
     {
         $hasFilterType = $request->query->get("type");
+        $currentPage = $request->query->get("page") ?? 1;
 
-        $results = [];
+        $session = $request->getSession();
+        $results = $session->get("searchResults");
 
-        foreach ($zabbix->fetchHosts()["result"] as $host) {
-            $name = $host["host"];
-            $ip = $host["interfaces"][0]["ip"];
+        if (!$results || time() - $results["meta"]["createdAt"] < 60) {
 
-            $client = GatewayFacade::createClient(GatewayFacade::createConfig($ip));
-            $gateway = GatewayFacade::connect($client);
+            $session->start();
+            $results["meta"] = ["length" => 0];
 
-            $userService = new PPPUserService($gateway);
+            foreach ($zabbix->fetchHosts()["result"] as $host) {
+                $hostid = $host["hostid"];
+                $ip = $host["interfaces"][0]["ip"];
 
-            $users = $userService->findUserBy("name", $request->query->get("q"));
+                $client = GatewayFacade::createClient(GatewayFacade::createConfig($ip));
+                $gateway = GatewayFacade::connect($client);
 
-            if ($users)
-                $results[] = [
-                    "name" => $name,
-                    "users" => $users
-                ];
+                $userService = new PPPUserService($gateway);
+
+                $users = $userService->findUserBy("name", $request->query->get("q"));
+
+                if ($users) {
+                    $results[] = [
+                        "hostid" => $hostid,
+                        "users" => $users,
+                    ];
+                    if (count($users) > 1)
+                        $results["meta"]["length"] += count($users);
+                }
+            }
+
+            $maxPage = ceil($results["meta"]["length"] / 20);
+
+            $results["meta"] += [
+                "currentPage" =>
+                    $currentPage <= $maxPage ? $currentPage : $maxPage,
+                "maxPage" => $maxPage,
+                "next" => $currentPage <= $maxPage,
+                "previous" => $currentPage > 1,
+                "createdAt" => time()
+            ];
+
+            $session->set("searchResults", $results);
         }
 
-        return $this->render('search/search.html.twig', ["results" => $results]);
+        return $this->render('search/index.html.twig', ["results" => $results]);
+
     }
 }

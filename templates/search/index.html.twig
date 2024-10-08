@@ -5,9 +5,7 @@
 {% block body %}
 
 <ul>
-    {% for result in results %}
-        <li>{{ result.name|e }}</li>
-    {% endfor %}
+    <li>Total de resultados: {{ results.meta.length|e }}</li>
 </ul>
 
 {% endblock %}
