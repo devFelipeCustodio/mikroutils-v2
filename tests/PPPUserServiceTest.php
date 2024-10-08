@@ -20,7 +20,7 @@ class PPPUserServiceTest extends TestCase
         $this->zabbix->method("fetchHosts")->willReturn(
             [
                 "result" => [
-                    "host" => "MKT-DQX-XRM-RTB-GW-AFINET",
+                    "hostid" => "11131",
                     "interfaces" => ["ip" => $_SERVER["MK_TEST_IP"]]
                 ]
             ]
