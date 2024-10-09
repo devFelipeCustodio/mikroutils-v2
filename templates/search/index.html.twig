@@ -3,9 +3,11 @@
 {% block title %}Hello UserController!{% endblock %}
 
 {% block body %}
-
+<p>Total de resultados: {{ output.meta.length|e }}</p>
 <ul>
-    <li>Total de resultados: {{ results.meta.length|e }}</li>
+    {% for user in output.users %}
+        <li>{{ user.name|e }}</li>
+    {% endfor %}
 </ul>
 
 {% endblock %}

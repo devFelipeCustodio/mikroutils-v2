@@ -16,17 +16,20 @@ class SearchController extends AbstractController
     public function index(Request $request, ZabbixService $zabbix): Response
     {
         $hasFilterType = $request->query->get("type");
-        $currentPage = $request->query->get("page") ?? 1;
-
+        $page = $request->query->get("page") ?? 1;
+        $cacheKey = $request->query->get("q") .
+            $request->query->get("type") . $request->query->get("gw");
         $session = $request->getSession();
-        $results = $session->get("searchResults");
+        $results = $session->get($cacheKey);
 
-        if (!$results || time() - $results["meta"]["createdAt"] < 60) {
+        if (!$results || time() - $results["meta"]["createdAt"] > 60) {
 
             $session->start();
             $results["meta"] = ["length" => 0];
+            $results["data"] = [];
 
             foreach ($zabbix->fetchHosts()["result"] as $host) {
+                $hostname = $host["host"];
                 $hostid = $host["hostid"];
                 $ip = $host["interfaces"][0]["ip"];
 
@@ -38,30 +41,54 @@ class SearchController extends AbstractController
                 $users = $userService->findUserBy("name", $request->query->get("q"));
 
                 if ($users) {
-                    $results[] = [
-                        "hostid" => $hostid,
-                        "users" => $users,
-                    ];
-                    if (count($users) > 1)
-                        $results["meta"]["length"] += count($users);
+                    array_push(
+                        $results["data"],
+                        [
+                            "hostname" => $hostname,
+                            "hostid" => $hostid,
+                            "users" => $users,
+                        ]
+
+                    );
+                    $results["meta"]["length"] += count($users);
                 }
             }
 
             $maxPage = ceil($results["meta"]["length"] / 20);
 
+            $page = $page <= $maxPage ? $page : $maxPage;
+
             $results["meta"] += [
-                "currentPage" =>
-                    $currentPage <= $maxPage ? $currentPage : $maxPage,
+                "currentPage" => $page,
                 "maxPage" => $maxPage,
-                "next" => $currentPage <= $maxPage,
-                "previous" => $currentPage > 1,
+                "next" => $page <= $maxPage,
+                "previous" => $page > 1,
                 "createdAt" => time()
             ];
 
-            $session->set("searchResults", $results);
+            $session->set($cacheKey, $results);
         }
 
-        return $this->render('search/index.html.twig', ["results" => $results]);
+        $output["users"] = [];
+        $counter = 0;
+
+        foreach ($results["data"] as $result) {
+            foreach ($result["users"] as $user) {
+                $counter++;
+                if ($counter <= ($page - 1) * 20)
+                    continue;
+
+                if (count($output["users"]) === 20)
+                    break 2;
+                $user["hostid"] = $result["hostid"];
+                $user["hostname"] = $result["hostname"];
+                array_push($output["users"], $user);
+            }
+        }
+        
+        $output["meta"] = $results["meta"];
+
+        return $this->render('search/index.html.twig', ["output" => $output]);
 
     }
 }
