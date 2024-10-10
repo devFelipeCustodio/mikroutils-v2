@@ -35,12 +35,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    public function getId(): ?string
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId(string $id): static
+    public function setId(int $id): static
     {
         $this->id = $id;
 
@@ -54,7 +54,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->id;
+        return $this->name;
     }
 
     /**
