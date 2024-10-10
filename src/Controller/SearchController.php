@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class SearchController extends AbstractController
 {
-    #[Route('/search', name: 'search')]
+    #[Route('/search', name: 'app_user_search')]
     public function index(Request $request, ZabbixService $zabbix): Response
     {
         $hasFilterType = $request->query->get("type");
@@ -80,6 +80,7 @@ class SearchController extends AbstractController
 
                 if (count($output["users"]) === 20)
                     break 2;
+
                 $user["hostid"] = $result["hostid"];
                 $user["hostname"] = $result["hostname"];
                 array_push($output["users"], $user);
