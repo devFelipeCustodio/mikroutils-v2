@@ -8,7 +8,9 @@ security:
         app_user_provider:
             entity:
                 class: App\Entity\User
-                property: name
+                property: username
+        # used to reload user from session & other features (e.g. switch_user)
+        # used to reload user from session & other features (e.g. switch_user)
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -16,11 +18,10 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            pattern: ^/search
             form_login:
                 login_path: app_login
                 check_path: app_login
-                username_parameter: name
+                enable_csrf: true
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#firewalls-authentication
@@ -32,4 +33,4 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/search, roles: ROLE_USER }
+         - { path: ^/search, roles: ROLE_USER }
