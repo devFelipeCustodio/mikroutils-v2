@@ -15,81 +15,88 @@ class SearchController extends AbstractController
     #[Route('/search', name: 'app_user_search')]
     public function index(Request $request, ZabbixService $zabbix): Response
     {
-        $hasFilterType = $request->query->get("type");
-        $page = $request->query->get("page") ?? 1;
-        $cacheKey = $request->query->get("q") .
-            $request->query->get("type") . $request->query->get("gw");
-        $session = $request->getSession();
-        $results = $session->get($cacheKey);
+        $query = $request->query->get("q");
 
-        if (!$results || time() - $results["meta"]["createdAt"] > 60) {
+        if ($query) {
+            $type = $request->query->get("type");
+            $gw = $request->query->get("gw");
+            $page = $request->query->get("page") ?? 1;
+            $cacheKey = $query . $type . $gw;
 
-            $session->start();
-            $results["meta"] = ["length" => 0];
-            $results["data"] = [];
+            $session = $request->getSession();
+            $results = $session->get($cacheKey);
 
-            foreach ($zabbix->fetchHosts()["result"] as $host) {
-                $hostname = $host["host"];
-                $hostid = $host["hostid"];
-                $ip = $host["interfaces"][0]["ip"];
+            if (!$results || time() - $results["meta"]["createdAt"] > 60) {
 
-                $client = GatewayFacade::createClient(GatewayFacade::createConfig($ip));
-                $gateway = GatewayFacade::connect($client);
+                $session->start();
+                $results["meta"] = ["length" => 0];
+                $results["data"] = [];
 
-                $userService = new PPPUserService($gateway);
+                foreach ($zabbix->fetchHosts()["result"] as $host) {
+                    $hostname = $host["host"];
+                    $hostid = $host["hostid"];
+                    $ip = $host["interfaces"][0]["ip"];
 
-                $users = $userService->findUserBy("name", $request->query->get("q"));
+                    $client = GatewayFacade::createClient(GatewayFacade::createConfig($ip));
+                    $gateway = GatewayFacade::connect($client);
 
-                if ($users) {
-                    array_push(
-                        $results["data"],
-                        [
-                            "hostname" => $hostname,
-                            "hostid" => $hostid,
-                            "users" => $users,
-                        ]
+                    $userService = new PPPUserService($gateway);
 
-                    );
-                    $results["meta"]["length"] += count($users);
+                    $users = $userService->findUserBy("name", $query);
+
+                    if ($users) {
+                        array_push(
+                            $results["data"],
+                            [
+                                "hostname" => $hostname,
+                                "hostid" => $hostid,
+                                "users" => $users,
+                            ]
+
+                        );
+                        $results["meta"]["length"] += count($users);
+                    }
+                }
+
+                $maxPage = ceil($results["meta"]["length"] / 20);
+
+                $page = $page <= $maxPage ? $page : $maxPage;
+
+                $results["meta"] += [
+                    "currentPage" => $page,
+                    "maxPage" => $maxPage,
+                    "next" => $page <= $maxPage,
+                    "previous" => $page > 1,
+                    "createdAt" => time()
+                ];
+
+                $session->set($cacheKey, $results);
+            }
+
+            $output["users"] = [];
+            $counter = 0;
+
+            foreach ($results["data"] as $result) {
+                foreach ($result["users"] as $user) {
+                    $counter++;
+                    if ($counter <= ($page - 1) * 20)
+                        continue;
+
+                    if (count($output["users"]) === 20)
+                        break 2;
+
+                    $user["hostid"] = $result["hostid"];
+                    $user["hostname"] = $result["hostname"];
+                    array_push($output["users"], $user);
                 }
             }
 
-            $maxPage = ceil($results["meta"]["length"] / 20);
+            $output["meta"] = $results["meta"];
 
-            $page = $page <= $maxPage ? $page : $maxPage;
-
-            $results["meta"] += [
-                "currentPage" => $page,
-                "maxPage" => $maxPage,
-                "next" => $page <= $maxPage,
-                "previous" => $page > 1,
-                "createdAt" => time()
-            ];
-
-            $session->set($cacheKey, $results);
+            return $this->render('search/results.html.twig', ["output" => $output]);
         }
 
-        $output["users"] = [];
-        $counter = 0;
-
-        foreach ($results["data"] as $result) {
-            foreach ($result["users"] as $user) {
-                $counter++;
-                if ($counter <= ($page - 1) * 20)
-                    continue;
-
-                if (count($output["users"]) === 20)
-                    break 2;
-
-                $user["hostid"] = $result["hostid"];
-                $user["hostname"] = $result["hostname"];
-                array_push($output["users"], $user);
-            }
-        }
-        
-        $output["meta"] = $results["meta"];
-
-        return $this->render('search/index.html.twig', ["output" => $output]);
+        return $this->render('search/index.html.twig');
 
     }
 }
