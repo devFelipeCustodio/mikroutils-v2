@@ -16,7 +16,7 @@ class UserController extends AbstractController
     public function index(EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
         $user = new User();
-        $user->setName("root");
+        $user->setUsername("root");
         $hashedPassword = $passwordHasher->hashPassword($user, "root");
         $user->setPassword($hashedPassword);
         $user->setCreatedAt(new DateTimeImmutable());
@@ -27,7 +27,7 @@ class UserController extends AbstractController
         $entityManager->flush();
 
         return $this->render('user/index.html.twig', [
-            'controller_name' =>  $user->getName(),
+            'controller_name' =>  $user->getUsername(),
         ]);
     }
 }
