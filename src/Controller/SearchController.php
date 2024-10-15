@@ -15,6 +15,8 @@ class SearchController extends AbstractController
     #[Route('/search', name: 'app_user_search')]
     public function index(Request $request, ZabbixService $zabbix): Response
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        
         $query = $request->query->get("q");
 
         if ($query) {
@@ -65,7 +67,7 @@ class SearchController extends AbstractController
                 $results["meta"] += [
                     "currentPage" => $page,
                     "maxPage" => $maxPage,
-                    "next" => $page <= $maxPage,
+                    "next" => $page < $maxPage,
                     "previous" => $page > 1,
                     "createdAt" => time()
                 ];
@@ -74,6 +76,10 @@ class SearchController extends AbstractController
             }
 
             $output["users"] = [];
+            $output["meta"] = $results["meta"];
+            $maxPage = $output["meta"]["maxPage"];
+            $page = $page <= $maxPage ? $page : $maxPage;
+
             $counter = 0;
 
             foreach ($results["data"] as $result) {
@@ -91,7 +97,12 @@ class SearchController extends AbstractController
                 }
             }
 
-            $output["meta"] = $results["meta"];
+
+            $output["meta"] += [
+                "currentPage" => $page,
+                "next" => $page < $maxPage,
+                "previous" => $page > 1,
+            ];
 
             return $this->render('search/results.html.twig', ["output" => $output]);
         }
