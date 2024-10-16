@@ -24,16 +24,6 @@ class AuthenticationController extends AbstractController
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        if($request->isMethod("POST") && !$error){
-            $session = new Session();
-            $session->setUserId($this->getUser()->getId());
-            $session->setUserAgent($request->headers->get("User-Agent"));
-            $session->setCreatedAt(new DateTimeImmutable());
-            $session->setIp($request->getClientIp());
-            $entityManager->persist($session);
-            $entityManager->flush();
-        }
-
         return $this->render('authentication/login.html.twig', [
             'controller_name' => 'AuthenticationController',
             'last_username' => $lastUsername,
