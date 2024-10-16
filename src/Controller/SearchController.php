@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class SearchController extends AbstractController
 {
-    #[Route('/search', name: 'app_user_search')]
+    #[Route('/search', name: 'app_user_search', methods: 'GET')]
     public function index(Request $request, ZabbixService $zabbix): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
