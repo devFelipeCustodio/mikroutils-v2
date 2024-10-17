@@ -7,7 +7,6 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ZabbixService
 {
-    private $envVarsMap = ["ZABBIX_URL", "ZABBIX_AUTH_TOKEN", "ZABBIX_GW_GROUPID"];
     private $url;
     private $token;
     private $groupID;
