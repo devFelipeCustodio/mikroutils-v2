@@ -16,8 +16,10 @@ class SearchController extends AbstractController
     public function index(Request $request, ZabbixService $zabbix): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        
+
         $query = $request->query->get("q");
+
+        $hosts = $zabbix->fetchHosts();
 
         if ($query) {
             $type = $request->query->get("type");
@@ -34,7 +36,7 @@ class SearchController extends AbstractController
                 $results["meta"] = ["length" => 0];
                 $results["data"] = [];
 
-                foreach ($zabbix->fetchHosts()["result"] as $host) {
+                foreach ($hosts["result"] as $host) {
                     $hostname = $host["host"];
                     $hostid = $host["hostid"];
                     $ip = $host["interfaces"][0]["ip"];
