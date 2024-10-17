@@ -35,6 +35,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
 
+    #[ORM\Column]
+    private array $allowed_host_ids = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -118,6 +121,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $created_at): static
     {
         $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    public function getAllowedHostIds(): array
+    {
+        return $this->allowed_host_ids;
+    }
+
+    public function setAllowedHostIds(array $allowed_host_ids): static
+    {
+        $this->allowed_host_ids = $allowed_host_ids;
 
         return $this;
     }
