@@ -2,16 +2,14 @@
 
 namespace App\Controller;
 
+use App\Form\Type\PPUserSearchType;
 use App\GatewayFacade;
-use App\HostsPermissionSetter;
 use App\PPPUserService;
 use App\Utilities;
 use App\ZabbixAPIClient;
 use App\PPPUserSearchPaginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,14 +26,25 @@ class SearchController extends AbstractController
         FormFactoryInterface $formFactory
     ): Response {
 
-        $form = $formFactory->createNamedBuilder("")
+        $params = ["output" => ["host"], "selectInterfaces" => ["ip"]];
+        $allowedHosts = $security->getUser()->getAllowedHostIds();
+        $hosts = [];
+
+        foreach ($zabbix->fetchHosts($params)["result"] as $h) {
+            if (array_search($h["hostid"], $allowedHosts))
+                $hosts[$h["host"]] = $h["hostid"];
+        }
+
+        $form = $formFactory->createNamedBuilder(
+            "",
+            PPUserSearchType::class,
+            null,
+            ["hosts" => $hosts]
+        )
             ->setMethod('GET')
-            ->add('q', TextType::class, ["label" => "Digite um nome, IP ou MAC de usuário"])
             ->getForm();
 
         $query = $request->query->get("q");
-        $hosts = $zabbix->fetchHosts()["result"];
-        $allowedHosts = $security->getUser()->getAllowedHostIds();
 
         if ($query) {
             $filter = $utilities::guessSearchFilterFromQuery($query);
@@ -52,11 +61,7 @@ class SearchController extends AbstractController
                 $results["meta"]["length"] = 0;
                 $results["data"] = [];
 
-
                 foreach ($hosts as $host) {
-                    $hostid = $host["hostid"];
-                    if (!array_search($hostid, $allowedHosts))
-                        continue;
                     $hostname = $host["host"];
                     $ip = $host["interfaces"][0]["ip"];
 
