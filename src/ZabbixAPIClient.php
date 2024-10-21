@@ -5,7 +5,7 @@ namespace App;
 use Exception;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class ZabbixService
+class ZabbixAPIClient
 {
     private $url;
     private $token;
@@ -13,14 +13,15 @@ class ZabbixService
     public function __construct(
         private HttpClientInterface $client,
     ) {
-        $this->url = $_SERVER["ZABBIX_URL"] . "/api_jsonrpc.php";
+        $this->url = $_SERVER["ZABBIX_API_URL"];
         $this->token = $_SERVER["ZABBIX_AUTH_TOKEN"];
         $this->groupID = $_SERVER["ZABBIX_GW_GROUPID"];
     }
 
-    public function fetchHosts(): array
+    public function fetchHosts(array $params = null): array
     {
-        $params = ["groupids" => $this->groupID, "output" => ["host"], "selectInterfaces" => ["ip"]];
+        if (!$params)
+            $params = ["groupids" => $this->groupID, "output" => ["host"], "selectInterfaces" => ["ip"]];
 
         $data = [
 
@@ -31,16 +32,13 @@ class ZabbixService
             "auth" => $this->token
 
         ];
-        
+
         $response = $this->client->request(
             'POST',
             $this->url,
             ["json" => $data]
         );
 
-        $statusCode = $response->getStatusCode();
-        if ($statusCode !== 200)
-            throw new Exception("[ZAB_CON_ERR] O servidor do Zabbix não retornou uma resposta válida. Verifique se a URL e o token são válidos.");
         $content = $response->toArray();
         return $content;
     }
