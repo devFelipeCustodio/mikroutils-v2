@@ -18,10 +18,12 @@ class ZabbixAPIClient
         $this->groupID = $_SERVER["ZABBIX_GW_GROUPID"];
     }
 
-    public function fetchHosts(array $params = null): array
+    public function fetchHosts(array $_params = null): array
     {
-        if (!$params)
-            $params = ["groupids" => $this->groupID, "output" => ["host"], "selectInterfaces" => ["ip"]];
+        $params = ["groupids" => $this->groupID];
+
+        if ($_params)
+            $params = array_merge($_params, $params);
 
         $data = [
 
