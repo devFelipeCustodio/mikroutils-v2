@@ -7,7 +7,7 @@ use Exception;
 final class PPPUserService
 {
 
-    private $filterMap = ["name" => "name", "mac" => "caller-id", "ip" => "address"];
+    private static $FILTER_MAP = ["name" => "name", "mac" => "caller-id", "ip" => "address"];
 
     public function __construct(private GatewayFacade $gateway)
     {
@@ -18,7 +18,7 @@ final class PPPUserService
         $users = $this->gateway->getActivePPPUsers();
 
         $filtered = array_filter($users, function ($user) use (&$filter, &$query) {
-            $regex = preg_match("/$query/i", $user[$this->filterMap[$filter]]);
+            $regex = preg_match("/$query/i", $user[PPPUserService::$FILTER_MAP[$filter]]);
             return $regex === 1;
         });
         return $filtered;
