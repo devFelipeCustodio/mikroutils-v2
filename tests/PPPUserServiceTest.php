@@ -4,28 +4,17 @@ namespace App\Tests;
 
 use App\GatewayFacade;
 use App\PPPUserService;
-use App\ZabbixService;
+use App\ZabbixAPIClient;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
 class PPPUserServiceTest extends TestCase
 {
-    private $zabbix;
     private $gateway;
     private $PPPUserService;
 
     protected function setUp(): void
     {
-        $this->zabbix = $this->createStub(ZabbixService::class);
-        $this->zabbix->method("fetchHosts")->willReturn(
-            [
-                "result" => [
-                    "hostid" => "11131",
-                    "interfaces" => ["ip" => $_SERVER["MK_TEST_IP"]]
-                ]
-            ]
-        );
-
         $this->gateway = $this->createStub(GatewayFacade::class);
         $this->gateway->method("getActivePPPUsers")->willReturn([
             [
