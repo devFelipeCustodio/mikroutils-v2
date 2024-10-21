@@ -34,4 +34,5 @@ security:
     access_control:
         - { path: ^/login, role: PUBLIC_ACCESS }
         - { path: ^/register, role: PUBLIC_ACCESS }
+        - { path: /zabbix, role: PUBLIC_ACCESS }
         - { path: ^/, role: ROLE_USER }
