@@ -3,9 +3,16 @@
 namespace App\Controller;
 
 use App\GatewayFacade;
+use App\HostsPermissionSetter;
 use App\PPPUserService;
-use App\ZabbixService;
+use App\Utilities;
+use App\ZabbixAPIClient;
+use App\PPPUserSearchPaginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -13,19 +20,28 @@ use Symfony\Component\Routing\Attribute\Route;
 class SearchController extends AbstractController
 {
     #[Route('/search', name: 'app_user_search', methods: 'GET')]
-    public function index(Request $request, ZabbixService $zabbix): Response
-    {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+    public function index(
+        Request $request,
+        ZabbixAPIClient $zabbix,
+        Security $security,
+        Utilities $utilities,
+        FormFactoryInterface $formFactory
+    ): Response {
+
+        $form = $formFactory->createNamedBuilder("")
+            ->setMethod('GET')
+            ->add('q', TextType::class, ["label" => "Digite um nome, IP ou MAC de usuário"])
+            ->getForm();
 
         $query = $request->query->get("q");
-
-        $hosts = $zabbix->fetchHosts();
+        $hosts = $zabbix->fetchHosts()["result"];
+        $allowedHosts = $security->getUser()->getAllowedHostIds();
 
         if ($query) {
-            $type = $request->query->get("type");
+            $filter = $utilities::guessSearchFilterFromQuery($query);
             $gw = $request->query->get("gw");
             $page = $request->query->get("page") ?? 1;
-            $cacheKey = $query . $type . $gw;
+            $cacheKey = $query . $filter . $gw;
 
             $session = $request->getSession();
             $results = $session->get($cacheKey);
@@ -33,12 +49,15 @@ class SearchController extends AbstractController
             if (!$results || time() - $results["meta"]["createdAt"] > 60) {
 
                 $session->start();
-                $results["meta"] = ["length" => 0];
+                $results["meta"]["length"] = 0;
                 $results["data"] = [];
 
-                foreach ($hosts["result"] as $host) {
-                    $hostname = $host["host"];
+
+                foreach ($hosts as $host) {
                     $hostid = $host["hostid"];
+                    if (!array_search($hostid, $allowedHosts))
+                        continue;
+                    $hostname = $host["host"];
                     $ip = $host["interfaces"][0]["ip"];
 
                     $client = GatewayFacade::createClient(GatewayFacade::createConfig($ip));
@@ -46,70 +65,36 @@ class SearchController extends AbstractController
 
                     $userService = new PPPUserService($gateway);
 
-                    $users = $userService->findUserBy("name", $query);
+                    $users = $userService->findUserBy($filter, $query);
 
                     if ($users) {
+                        $len = count($users);
                         array_push(
                             $results["data"],
                             [
-                                "hostname" => $hostname,
-                                "hostid" => $hostid,
-                                "users" => $users,
+                                "meta" => [
+                                    "hostname" => $hostname,
+                                    "ip" => $ip
+                                ],
+                                "data" => $users,
                             ]
 
                         );
-                        $results["meta"]["length"] += count($users);
+                        $results["meta"]["length"] += $len;
                     }
                 }
 
-                $maxPage = ceil($results["meta"]["length"] / 20);
-
-                $page = $page <= $maxPage ? $page : $maxPage;
-
-                $results["meta"] += [
-                    "currentPage" => $page,
-                    "maxPage" => $maxPage,
-                    "next" => $page < $maxPage,
-                    "previous" => $page > 1,
-                    "createdAt" => time()
-                ];
-
+                $results["meta"]["createdAt"] = time();
                 $session->set($cacheKey, $results);
             }
 
-            $output["users"] = [];
-            $output["meta"] = $results["meta"];
-            $maxPage = $output["meta"]["maxPage"];
-            $page = $page <= $maxPage ? $page : $maxPage;
+            $paginator = new PPPUserSearchPaginator($results, $page);
+            $results = $paginator->paginate();
 
-            $counter = 0;
-
-            foreach ($results["data"] as $result) {
-                foreach ($result["users"] as $user) {
-                    $counter++;
-                    if ($counter <= ($page - 1) * 20)
-                        continue;
-
-                    if (count($output["users"]) === 20)
-                        break 2;
-
-                    $user["hostid"] = $result["hostid"];
-                    $user["hostname"] = $result["hostname"];
-                    array_push($output["users"], $user);
-                }
-            }
-
-
-            $output["meta"] += [
-                "currentPage" => $page,
-                "next" => $page < $maxPage,
-                "previous" => $page > 1,
-            ];
-
-            return $this->render('search/results.html.twig', ["output" => $output]);
+            return $this->render('search/results.html.twig', ["results" => $results]);
         }
 
-        return $this->render('search/index.html.twig');
 
+        return $this->render('search/index.html.twig', ['form' => $form]);
     }
 }
