@@ -7,7 +7,7 @@ use App\GatewayFacade;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Dotenv\Dotenv;
 
-class GatewayFacadeTest extends TestCase
+class GatewayFacadeIntegrationTest extends TestCase
 {
     private GatewayFacade $gw;
 
