@@ -22,15 +22,16 @@ class SearchController extends AbstractController
         Request $request,
         ZabbixAPIClient $zabbix,
         Security $security,
-        Utilities $utilities,
-        FormFactoryInterface $formFactory
+        FormFactoryInterface $formFactory,
+        Utilities $utilities
     ): Response {
 
-        $params = ["output" => ["host"], "selectInterfaces" => ["ip"]];
         $allowedHosts = $security->getUser()->getAllowedHostIds();
+        $params = ["hostids" => $allowedHosts, "output" => ["host"], "selectInterfaces" => ["ip"]];
+        $response = $zabbix->fetchHosts($params)["result"];
         $hosts = [];
 
-        foreach ($zabbix->fetchHosts($params)["result"] as $h) {
+        foreach ($response as $h) {
             if (array_search($h["hostid"], $allowedHosts))
                 $hosts[$h["host"]] = $h["hostid"];
         }
@@ -44,13 +45,23 @@ class SearchController extends AbstractController
             ->setMethod('GET')
             ->getForm();
 
-        $query = $request->query->get("q");
+        $form->handleRequest($request);
 
-        if ($query) {
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $query = $form->getData()["q"];
+            $gw = $form->getData()["gw"] ?? [];
+            $page = $form->getData()["page"] ?? 1;
             $filter = $utilities::guessSearchFilterFromQuery($query);
-            $gw = $request->query->get("gw");
-            $page = $request->query->get("page") ?? 1;
-            $cacheKey = $query . $filter . $gw;
+            $hash = array_reduce(
+                $gw,
+                function ($sum, $id) {
+                    if (!$sum)
+                        $sum = 0;
+                    return $sum + $id;
+                }
+            );
+            $cacheKey = $query . $hash;
 
             $session = $request->getSession();
             $results = $session->get($cacheKey);
@@ -61,7 +72,7 @@ class SearchController extends AbstractController
                 $results["meta"]["length"] = 0;
                 $results["data"] = [];
 
-                foreach ($hosts as $host) {
+                foreach ($response as $host) {
                     $hostname = $host["host"];
                     $ip = $host["interfaces"][0]["ip"];
 
@@ -97,8 +108,8 @@ class SearchController extends AbstractController
             $results = $paginator->paginate();
 
             return $this->render('search/results.html.twig', ["results" => $results]);
-        }
 
+        }
 
         return $this->render('search/index.html.twig', ['form' => $form]);
     }

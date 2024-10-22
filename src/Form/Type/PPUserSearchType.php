@@ -36,7 +36,7 @@ class PPUserSearchType extends AbstractType
                 'label_attr' => [
                     'class' => 'checkbox-switch'
                 ],
-                "choices" => $options["hosts"]
+                "choices" => array_merge(["Todos" => "all"], $options["hosts"])
             ])
         ;
     }

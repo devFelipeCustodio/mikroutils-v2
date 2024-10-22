@@ -13,19 +13,23 @@
             </svg>
         </button>
     </div>
-    <div class="accordion" id="gatewayFilter">
-    <div class="accordion-item">
-        <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                Gateways
-            </button>
-        </h2>
-        <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#gatewayFilter">
-            <div class="accordion-body">
-                {{ form_row(form.gw) }}
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        Filtro
+    </button>
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Filtrar por gateway</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                    <div class="modal-body">
+                        {{ form_end(form) }}
+                    </div>
+                </div>
             </div>
         </div>
   </div>
 
-{{ form_end(form) }}
+
 {% endblock %}
