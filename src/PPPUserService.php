@@ -13,7 +13,7 @@ final class PPPUserService
     {
     }
 
-    public function findUserBy($filter, $query)
+    public function getShortUserDataBy($filter, $query)
     {
         $users = $this->gateway->getActivePPPUsers();
 

@@ -16,7 +16,7 @@ final class Utilities
         return round($bytes, $precision) . $units[$pow];
     }
 
-    public static function guessSearchFilterFromQuery(string $q)
+    public static function guessSearchTypeFromQuery(string $q)
     {
         if (Utilities::isIP($q))
             return "ip";

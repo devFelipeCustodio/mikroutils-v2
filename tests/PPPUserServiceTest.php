@@ -4,7 +4,6 @@ namespace App\Tests;
 
 use App\GatewayFacade;
 use App\PPPUserService;
-use App\ZabbixAPIClient;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -74,19 +73,19 @@ class PPPUserServiceTest extends TestCase
     public function testaBuscaUsuarioPorNome(): void
     {
 
-        $results = $this->PPPUserService->findUserBy("name", "test");
+        $results = $this->PPPUserService->getShortUserDataBy("name", "test");
         $this->assertCount(1, $results);
     }
 
     public function testaBuscaUsuarioPorMAC(): void
     {
-        $results = $this->PPPUserService->findUserBy("mac", "40:ED:00:FD:FA:F2");
+        $results = $this->PPPUserService->getShortUserDataBy("mac", "40:ED:00:FD:FA:F2");
         $this->assertCount(1, $results);
     }
 
     public function testaBuscaUsuarioPorIP(): void
     {
-        $results = $this->PPPUserService->findUserBy("ip", "179.127.194.184");
+        $results = $this->PPPUserService->getShortUserDataBy("ip", "179.127.194.184");
         $this->assertCount(1, $results);
     }
 

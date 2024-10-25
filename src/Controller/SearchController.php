@@ -2,12 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\Search;
 use App\Form\Type\PPUserSearchType;
-use App\GatewayFacade;
-use App\PPPUserService;
+use App\GatewayCollection;
 use App\Utilities;
 use App\ZabbixAPIClient;
 use App\PPPUserSearchPaginator;
+use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -28,18 +29,20 @@ class SearchController extends AbstractController
 
         $allowedHosts = $security->getUser()->getAllowedHostIds();
         $params = ["hostids" => $allowedHosts, "output" => ["host"], "selectInterfaces" => ["ip"]];
-        $response = $zabbix->fetchHosts($params)["result"];
+        $zabbixHosts = $zabbix->fetchHosts($params)["result"];
         $hosts = [];
 
-        foreach ($response as $h) {
+        foreach ($zabbixHosts as $h) {
             if (array_search($h["hostid"], $allowedHosts))
                 $hosts[$h["host"]] = $h["hostid"];
         }
 
+        $search = new Search();
+
         $form = $formFactory->createNamedBuilder(
             "",
             PPUserSearchType::class,
-            null,
+            $search,
             ["hosts" => $hosts]
         )
             ->setMethod('GET')
@@ -48,20 +51,20 @@ class SearchController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            $query = $form->getData()["q"];
-            $gw = $form->getData()["gw"] ?? [];
-            $page = $form->getData()["page"] ?? 1;
-            $filter = $utilities::guessSearchFilterFromQuery($query);
+            $search = $form->getData();
+            if (count($search->getHosts()) === 0)
+                $search->setHosts($allowedHosts);
+            $page = $form->get("page")->getData() ?? 1;
+            $type = $utilities::guessSearchTypeFromQuery($search->getQ());
             $hash = array_reduce(
-                $gw,
+                $allowedHosts,
                 function ($sum, $id) {
                     if (!$sum)
                         $sum = 0;
                     return $sum + $id;
                 }
             );
-            $cacheKey = $query . $hash;
+            $cacheKey = $search->getQ() . $hash;
 
             $session = $request->getSession();
             $results = $session->get($cacheKey);
@@ -69,44 +72,19 @@ class SearchController extends AbstractController
             if (!$results || time() - $results["meta"]["createdAt"] > 60) {
 
                 $session->start();
-                $results["meta"]["length"] = 0;
-                $results["data"] = [];
-
-                foreach ($response as $host) {
-                    $hostname = $host["host"];
-                    $ip = $host["interfaces"][0]["ip"];
-
-                    $client = GatewayFacade::createClient(GatewayFacade::createConfig($ip));
-                    $gateway = GatewayFacade::connect($client);
-
-                    $userService = new PPPUserService($gateway);
-
-                    $users = $userService->findUserBy($filter, $query);
-
-                    if ($users) {
-                        $len = count($users);
-                        array_push(
-                            $results["data"],
-                            [
-                                "meta" => [
-                                    "hostname" => $hostname,
-                                    "ip" => $ip
-                                ],
-                                "data" => $users,
-                            ]
-
-                        );
-                        $results["meta"]["length"] += $len;
-                    }
-                }
-
-                $results["meta"]["createdAt"] = time();
+                $gwCollection = new GatewayCollection($zabbixHosts);
+                $results = $gwCollection->findShortUserDataBy($type, $search->getQ());
                 $session->set($cacheKey, $results);
             }
 
             $paginator = new PPPUserSearchPaginator($results, $page);
             $results = $paginator->paginate();
 
+            $search->setUserId($security->getUser()->getId());
+            $search->setHosts($allowedHosts);
+            $search->setCreatedAt(new DateTimeImmutable());
+            $search->setType($type);
+            $search->setPage($page);
             return $this->render('search/results.html.twig', ["results" => $results]);
 
         }
