@@ -14,7 +14,7 @@ class Search
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $q = null;
+    private ?string $query = null;
 
     #[ORM\Column]
     private ?int $user_id = null;
@@ -28,22 +28,19 @@ class Search
     #[ORM\Column(length: 255)]
     private ?string $type = null;
 
-    #[ORM\Column]
-    private ?int $page = null;
-
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getQ(): ?string
+    public function getQuery(): ?string
     {
-        return $this->q;
+        return $this->query;
     }
 
-    public function setQ(string $q): static
+    public function setQuery(string $q): static
     {
-        $this->q = $q;
+        $this->query = $q;
 
         return $this;
     }
@@ -92,18 +89,6 @@ class Search
     public function setType(string $type): static
     {
         $this->type = $type;
-
-        return $this;
-    }
-
-    public function getPage(): ?int
-    {
-        return $this->page;
-    }
-
-    public function setPage(int $page): static
-    {
-        $this->page = $page;
 
         return $this;
     }
