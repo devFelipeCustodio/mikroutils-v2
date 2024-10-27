@@ -1,23 +1,36 @@
 <?php
 
 namespace App;
+use RouterOS\Exceptions\ConnectException;
 
 final class GatewayCollection
 {
 
     private $clients = [];
-    public function __construct(private array $hosts)
+    private $errors = [];
+    public function __construct(private array $hosts, private ?array $hostidsFromSearch = [])
     {
         foreach ($hosts as $host) {
             $hostname = $host["host"];
             $ip = $host["interfaces"][0]["ip"];
-            $client = GatewayFacade::createClient(GatewayFacade::createConfig($ip));
-            $this->clients[] = [
-                "hostname" => $hostname,
-                "ip" => $ip,
-                "client" => GatewayFacade::connect($client)
-            ];
+            try {
+                $client = GatewayFacade::createClient(GatewayFacade::createConfig($ip));
+                $this->clients[] = [
+                    "hostname" => $hostname,
+                    "ip" => $ip,
+                    "client" => GatewayFacade::connect($client)
+                ];
+            } catch (ConnectException $e) {
+                $this->errors[] = [
+                    "hostname" => $hostname,
+                    "message" => $e->getMessage()
+                ];
+            }
         }
+    }
+
+    public function getErrors() {
+        return $this->errors;
     }
 
     public function findShortUserDataBy(string $filter, string $query)
@@ -28,9 +41,9 @@ final class GatewayCollection
         foreach ($this->clients as $client) {
             $hostname = $client["hostname"];
             $ip = $client["ip"];
-            $userService = new PPPUserService($client["client"]);
+            $gwService = new GatewayService($client["client"]);
 
-            $users = $userService->getShortUserDataBy($filter, $query);
+            $users = $gwService->getShortUserDataBy($filter, $query);
 
             if ($users) {
                 $len = count($users);
