@@ -4,7 +4,7 @@ namespace App;
 
 use Exception;
 
-final class PPPUserService
+final class GatewayService
 {
 
     private static $FILTER_MAP = ["name" => "name", "mac" => "caller-id", "ip" => "address"];
@@ -18,7 +18,7 @@ final class PPPUserService
         $users = $this->gateway->getActivePPPUsers();
 
         $filtered = array_filter($users, function ($user) use (&$filter, &$query) {
-            $regex = preg_match("/$query/i", $user[PPPUserService::$FILTER_MAP[$filter]]);
+            $regex = preg_match("/$query/i", $user[GatewayService::$FILTER_MAP[$filter]]);
             return $regex === 1;
         });
         return $filtered;
@@ -41,7 +41,7 @@ final class PPPUserService
             "uptime" => $interfaceOverview["uptime"],
             "local-address" => $interfaceOverview["local-address"],
             "remote-address" => $interfaceOverview["remote-address"],
-            "max-limit" => $queue["max-limit"],
+            "max-limit" => $queue["max-limit"] ?? "N/A",
             "rx-byte" => $interface["rx-byte"],
             "tx-byte" => $interface["tx-byte"],
             "last-link-up-time" => $interface["last-link-up-time"]

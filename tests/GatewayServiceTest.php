@@ -3,11 +3,11 @@
 namespace App\Tests;
 
 use App\GatewayFacade;
-use App\PPPUserService;
+use App\GatewayService;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
-class PPPUserServiceTest extends TestCase
+class GatewayServiceTest extends TestCase
 {
     private $gateway;
     private $PPPUserService;
@@ -67,7 +67,7 @@ class PPPUserServiceTest extends TestCase
             ]
         );
         /** @disregard  */
-        $this->PPPUserService = new PPPUserService($this->gateway);
+        $this->PPPUserService = new GatewayService($this->gateway);
     }
 
     public function testaBuscaUsuarioPorNome(): void
