@@ -10,7 +10,7 @@ class PPPUserSearchPaginator
     private array $results;
     private int $page;
     private array $output = ["data" => [], "meta" => []];
-    function __construct(array $results, int $page, $itemsPerPage = 50)
+    function __construct(array $results, int $page, $itemsPerPage = 30)
     {
         $this->results = $results;
         $this->itemsPerPage = $itemsPerPage;
