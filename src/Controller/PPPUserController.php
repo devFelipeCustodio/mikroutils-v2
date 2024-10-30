@@ -57,6 +57,10 @@ class PPPUserController extends AbstractController
 
         $form->handleRequest($request);
 
+        $results = [];
+        $errors = [];
+
+
         if ($form->isSubmitted() && $form->isValid()) {
             $search = $form->getData();
             if (count($search->getHosts()) === 0)
@@ -66,7 +70,6 @@ class PPPUserController extends AbstractController
             $cacheKey = hash("sha256", $search->getQuery() . serialize($search->getHosts()));
             $session = $request->getSession();
             $results = $session->get($cacheKey);
-            $errors = [];
 
             if (!$results || time() - $results["meta"]["createdAt"] > 60) {
                 $filteredHosts = array_filter($zabbixHosts, function ($h) use (&$search) {
@@ -88,14 +91,13 @@ class PPPUserController extends AbstractController
 
             $paginator = new PPPUserSearchPaginator($results, $page);
             $results = $paginator->paginate();
-            return $this->render('ppp_user/results.html.twig', [
-                "results" => $results,
-                "errors" => $errors
-            ]);
-
         }
 
-        return $this->render('ppp_user/search.html.twig', ['form' => $form]);
+        return $this->render('ppp_user/search.html.twig', [
+            "form" => $form,
+            "results" => $results,
+            "errors" => $errors
+        ]);
     }
 
     #[Route('/ppp_user/detail', name: 'app_ppp_user_detail', methods: 'GET')]
