@@ -10,7 +10,7 @@ class PPPUserSearchPaginator
     private array $results;
     private int $page;
     private array $output = ["data" => [], "meta" => []];
-    function __construct(array $results, int $page, $itemsPerPage = 30)
+    function __construct(array $results, int $page, $itemsPerPage = 20)
     {
         $this->results = $results;
         $this->itemsPerPage = $itemsPerPage;
@@ -30,7 +30,8 @@ class PPPUserSearchPaginator
             "currentPage" => $this->page,
             "maxPage" => $maxPage,
             "next" => $next,
-            "previous" => $previous
+            "previous" => $previous,
+            "itemsPerPage" => $this->itemsPerPage
         ]);
 
     }
