@@ -13,6 +13,10 @@ final class GatewayService
     {
     }
 
+    public function getUsers(){
+        return $this->gateway->getActivePPPUsers();
+    }
+
     public function getShortUserDataBy($filter, $query)
     {
         $users = $this->gateway->getActivePPPUsers();
