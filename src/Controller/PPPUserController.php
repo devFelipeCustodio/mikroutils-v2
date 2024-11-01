@@ -133,4 +133,39 @@ class PPPUserController extends AbstractController
             "manufacturer" => $manufacturer
         ]);
     }
+
+    #[Route('/ppp_user/export', name: 'app_ppp_user_export', methods: 'GET')]
+    public function export(
+        ZabbixAPIClient $zabbix,
+        Security $security,
+        EntityManagerInterface $entityManager
+    ) {
+        $allowedHosts = $security->getUser()->getAllowedHostIds();
+        $params = ["hostids" => $allowedHosts, "output" => ["host"], "selectInterfaces" => ["ip"]];
+        $hosts = $zabbix->fetchHosts($params)["result"];
+
+        $hosts = array_filter(
+            $hosts,
+            function ($h) use (&$allowedHosts) {
+                return array_search($h["hostid"], $allowedHosts) !== false;
+            }
+        );
+
+        $gwCollection = new GatewayCollection($hosts);
+        $results = $gwCollection->getUsers();
+        $csv = "";
+        foreach ($results["data"] as $gw) {
+            foreach ($gw["data"] as $user) {
+                $csv .= $gw["meta"]["hostname"] . "," .
+                    $user["name"] . "," .
+                    $user["caller-id"] . "\n";
+
+            }
+        }
+        $response = new Response();
+        $response->setContent($csv);
+        $response->setStatusCode(200);
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->send();
+    }
 }
