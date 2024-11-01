@@ -16,7 +16,7 @@
 				<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewbox="0 -960 960 960" width="24px" fill="currentColor"><path d="M400-240v-80h160v80H400ZM240-440v-80h480v80H240ZM120-640v-80h720v80H120Z"/></svg>
 			</button>
 			{% if "ROLE_ADMIN" in app.user.roles %}
-				<button type="button" class="px-4 btn btn-primary mb-3 d-flex justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#filterModal">
+				<button type="submit" formaction="/export" class="px-4 btn btn-primary mb-3 d-flex justify-content-center align-items-center">
 					<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewbox="0 -960 960 960" width="24px" fill="currentColor"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg>
 				</button>
 			{% endif %}
