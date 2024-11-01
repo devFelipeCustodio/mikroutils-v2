@@ -66,4 +66,35 @@ final class GatewayCollection
         return $results;
     }
 
+    public function getUsers()
+    {
+        $results["meta"]["length"] = 0;
+        $results["data"] = [];
+
+        foreach ($this->clients as $client) {
+            $hostname = $client["hostname"];
+            $gwService = new GatewayService($client["client"]);
+
+            $users = $gwService->getUsers();
+
+            if ($users) {
+                $len = count($users);
+                array_push(
+                    $results["data"],
+                    [
+                        "meta" => [
+                            "hostname" => $hostname,
+                        ],
+                        "data" => $users,
+                    ]
+
+                );
+                $results["meta"]["length"] += $len;
+            }
+        }
+
+        $results["meta"]["createdAt"] = time();
+        return $results;
+    }
+
 }
