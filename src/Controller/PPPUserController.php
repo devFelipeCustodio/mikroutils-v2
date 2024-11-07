@@ -79,7 +79,7 @@ class PPPUserController extends AbstractController
                 $results = $gwCollection->findShortUserDataBy($type, $search->getQuery());
                 $errors = $gwCollection->getErrors();
                 $search->setUserId($user->getId());
-                $search->setHosts($allowedHosts);
+                $search->setHosts($filteredHosts);
                 $search->setCreatedAt(new \DateTimeImmutable());
                 $search->setType($type);
                 $entityManager->persist($search);
