@@ -3,24 +3,23 @@
 namespace App\Controller;
 
 use App\Entity\Search;
-use App\Form\Type\PPUserSearchFormType;
+use App\Entity\User;
+use App\Form\Type\PPPUserSearchFormType;
 use App\GatewayCollection;
 use App\GatewayFacade;
 use App\GatewayService;
+use App\PPPUserSearchPaginator;
 use App\Utilities;
 use App\ZabbixAPIClient;
-use App\PPPUserSearchPaginator;
-use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Throwable;
 
 class PPPUserController extends AbstractController
 {
@@ -28,29 +27,28 @@ class PPPUserController extends AbstractController
     public function search(
         Request $request,
         ZabbixAPIClient $zabbix,
-        Security $security,
         FormFactoryInterface $formFactory,
         Utilities $utilities,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
     ): Response {
-
-        $allowedHosts = $security->getUser()->getAllowedHostIds();
-        $params = ["hostids" => $allowedHosts, "output" => ["host"], "selectInterfaces" => ["ip"]];
-        $zabbixHosts = $zabbix->fetchHosts($params)["result"];
+        $user = $this->getUser();
+        assert($user instanceof User);
+        $allowedHosts = $user->getAllowedHostIds();
+        $params = ['hostids' => $allowedHosts, 'output' => ['host'], 'selectInterfaces' => ['ip']];
+        $zabbixHosts = $zabbix->fetchHosts($params)['result'];
         $hostTable = [];
 
         foreach ($zabbixHosts as $h) {
-            if (array_search($h["hostid"], $allowedHosts) !== false)
-                $hostTable[$h["host"]] = $h["hostid"];
+            $hostTable[$h['host']] = $h['hostid'];
         }
 
         $search = new Search();
 
         $form = $formFactory->createNamedBuilder(
-            "",
-            PPUserSearchFormType::class,
+            '',
+            PPPUserSearchFormType::class,
             $search,
-            ["hosts" => $hostTable]
+            ['hosts' => $hostTable]
         )
             ->setMethod('GET')
             ->getForm();
@@ -60,28 +58,29 @@ class PPPUserController extends AbstractController
         $results = [];
         $errors = [];
 
-
         if ($form->isSubmitted() && $form->isValid()) {
             $search = $form->getData();
-            if (count($search->getHosts()) === 0)
+            if (0 === count($search->getHosts())) {
                 $search->setHosts($allowedHosts);
-            $page = $request->query->getInt("page", 1);
+            }
+            $page = $request->query->getInt('page', 1);
             $type = $utilities::guessSearchTypeFromQuery($search->getQuery());
-            $cacheKey = hash("sha256", $search->getQuery() . serialize($search->getHosts()));
+            $cacheKey = hash('sha256', $search->getQuery().serialize($search->getHosts()));
             $session = $request->getSession();
             $results = $session->get($cacheKey);
 
-            if (!$results || time() - $results["meta"]["createdAt"] > 60) {
+            if (!$results || time() - $results['meta']['createdAt'] > 60) {
                 $filteredHosts = array_filter($zabbixHosts, function ($h) use (&$search) {
-                    if (array_search($h["hostid"], $search->getHosts()) !== false)
+                    if (false !== array_search($h['hostid'], $search->getHosts())) {
                         return true;
+                    }
                 });
                 $gwCollection = new GatewayCollection($filteredHosts);
                 $results = $gwCollection->findShortUserDataBy($type, $search->getQuery());
                 $errors = $gwCollection->getErrors();
-                $search->setUserId($security->getUser()->getId());
+                $search->setUserId($user->getId());
                 $search->setHosts($allowedHosts);
-                $search->setCreatedAt(new DateTimeImmutable());
+                $search->setCreatedAt(new \DateTimeImmutable());
                 $search->setType($type);
                 $entityManager->persist($search);
                 $entityManager->flush();
@@ -94,9 +93,9 @@ class PPPUserController extends AbstractController
         }
 
         return $this->render('ppp_user/search.html.twig', [
-            "form" => $form,
-            "results" => $results,
-            "errors" => $errors
+            'form' => $form,
+            'results' => $results,
+            'errors' => $errors,
         ]);
     }
 
@@ -104,68 +103,33 @@ class PPPUserController extends AbstractController
     public function detail(
         Request $request,
         ZabbixAPIClient $zabbix,
-        Security $security,
         HttpClientInterface $httpClient,
         EntityManagerInterface $entityManager,
         #[MapQueryParameter] string $name,
-        #[MapQueryParameter] string $gw,
-    ) {
-        $params = ["hostids" => $gw, "output" => ["host"], "selectInterfaces" => ["ip"]];
-        $result = $zabbix->fetchHosts($params)["result"];
-        if (empty($result))
+        #[MapQueryParameter] string $gw): NotFoundHttpException|Response
+    {
+        $params = ['hostids' => $gw, 'output' => ['host'], 'selectInterfaces' => ['ip']];
+        $result = $zabbix->fetchHosts($params)['result'];
+        if (empty($result)) {
             return $this->createNotFoundException();
-        $config = GatewayFacade::createConfig($result[0]["interfaces"][0]["ip"]);
+        }
+        $config = GatewayFacade::createConfig($result[0]['interfaces'][0]['ip']);
         $client = $client = GatewayFacade::createClient($config);
         $gwService = new GatewayService(GatewayFacade::connect($client));
         $user = $gwService->getFullUserDataByName($name);
         $manufacturer = null;
         try {
             $apiResponse = $httpClient->
-                request("GET", "https://www.macvendorlookup.com/api/v2/" . $user['caller-id'])->toArray();
-            $manufacturer = $apiResponse[0]["company"];
-        } catch (Throwable $th) {
-            $manufacturer = "N/A";
+                request('GET', 'https://www.macvendorlookup.com/api/v2/'.$user['caller-id'])->toArray();
+            $manufacturer = $apiResponse[0]['company'];
+        } catch (\Throwable $th) {
+            $manufacturer = 'N/A';
         }
 
         return $this->render('ppp_user/detail.html.twig', [
-            "name" => $user['user'],
-            "gw" => $result[0]["host"],
-            "manufacturer" => $manufacturer
+            'name' => $user['user'],
+            'gw' => $result[0]['host'],
+            'manufacturer' => $manufacturer,
         ]);
-    }
-
-    #[Route('/ppp_user/export', name: 'app_ppp_user_export', methods: 'GET')]
-    public function export(
-        ZabbixAPIClient $zabbix,
-        Security $security,
-        EntityManagerInterface $entityManager
-    ) {
-        $allowedHosts = $security->getUser()->getAllowedHostIds();
-        $params = ["hostids" => $allowedHosts, "output" => ["host"], "selectInterfaces" => ["ip"]];
-        $hosts = $zabbix->fetchHosts($params)["result"];
-
-        $hosts = array_filter(
-            $hosts,
-            function ($h) use (&$allowedHosts) {
-                return array_search($h["hostid"], $allowedHosts) !== false;
-            }
-        );
-
-        $gwCollection = new GatewayCollection($hosts);
-        $results = $gwCollection->getUsers();
-        $csv = "";
-        foreach ($results["data"] as $gw) {
-            foreach ($gw["data"] as $user) {
-                $csv .= $gw["meta"]["hostname"] . "," .
-                    $user["name"] . "," .
-                    $user["caller-id"] . "\n";
-
-            }
-        }
-        $response = new Response();
-        $response->setContent($csv);
-        $response->setStatusCode(200);
-        $response->headers->set('Content-Type', 'text/csv');
-        $response->send();
     }
 }
