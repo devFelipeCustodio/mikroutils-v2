@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\ExportUsers;
 use App\Entity\User;
+use App\Form\ExportUsersFormType;
 use App\GatewayCollection;
 use App\ZabbixAPIClient;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,11 +19,12 @@ use Symfony\Component\Routing\Attribute\Route;
 class ExportController extends AbstractController
 {
     #[Route('/export/ppp_users', name: 'app_export_ppp_users', methods: 'GET')]
-    public function export(Request $request,
+    public function export(
+        Request $request,
         FormFactoryInterface $formFactory,
         ZabbixAPIClient $zabbix,
-        EntityManagerInterface $entityManager): ?Response
-    {
+        EntityManagerInterface $entityManager
+    ): ?Response {
         $user = $this->getUser();
         assert($user instanceof User);
         $allowedHosts = $user->getAllowedHostIds();
@@ -33,31 +36,37 @@ class ExportController extends AbstractController
             $hostTable[$h['host']] = $h['hostid'];
         }
 
-        $form = $formFactory->createNamedBuilder('hosts', ChoiceType::class, null, [
-            'csrf_protection' => false,
-            'label' => false,
-            'multiple' => true,
-            'expanded' => true,
-            'label_attr' => [
-                'class' => 'checkbox-switch',
-            ],
-            'choices' => array_merge(['Todos' => 'all'], $hostTable),
-        ])
-                ->add('Exportar', SubmitType::class, ['attr' => ['class' => 'btn-primary mt-3']])
-                ->setMethod('GET')
-                ->getForm();
+        $export = new ExportUsers();
+
+        $form = $formFactory->createNamedBuilder(
+            '',
+            ExportUsersFormType::class,
+            $export,
+            ['hosts' => $hostTable]
+        )
+            ->setMethod('GET')
+            ->getForm();
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $gwCollection = new GatewayCollection($zabbixHosts);
+            $export = $form->getData();
+            if (0 === count($export->getHosts())) {
+                $export->setHosts($allowedHosts);
+            }
+            $filteredHosts = array_filter($zabbixHosts, function ($h) use (&$export) {
+                if (false !== array_search($h['hostid'], $export->getHosts())) {
+                    return true;
+                }
+            });
+            $gwCollection = new GatewayCollection($filteredHosts);
             $results = $gwCollection->getUsers();
             $csv = '';
             foreach ($results['data'] as $gw) {
                 foreach ($gw['data'] as $user) {
-                    $csv .= str_replace(',', "\,", $gw['meta']['hostname']).','.
-                        str_replace(',', "\,", $user['name']).','.
-                        str_replace(',', "\,", $user['caller-id'])."\n";
+                    $csv .= str_replace(',', "\,", $gw['meta']['hostname']) . ',' .
+                        str_replace(',', "\,", $user['name']) . ',' .
+                        str_replace(',', "\,", $user['caller-id']) . "\n";
                 }
             }
             $response = new Response();

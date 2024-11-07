@@ -1,3 +1,11 @@
 {% extends 'base.html.twig' %}
 {% block title %}Detail{% endblock %}
-{% block body %}{{ form(form) }}{% endblock %}
+{% block body %}
+<h1>Exportar usuários</h1>
+<p>Uma lista de usuários no formato CSV será gerada contendo o gateway, nome de usuário, MAC e IP.
+{{ form_start(form, {"attr": {"class": "container"}}) }}
+    {{ form_errors(form) }}
+    {{ form_widget(form.hosts, {"attr": {"class": "mb-3"}}) }}
+    <button class="mb-3 btn btn-primary" type="submit">Exportar</button>
+{{ form_end(form) }}
+{% endblock %}
