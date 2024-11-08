@@ -48,7 +48,10 @@ class PPPUserController extends AbstractController
             '',
             PPPUserSearchFormType::class,
             $search,
-            ['hosts' => $hostTable]
+            [
+                'hosts' => $hostTable,
+                "searchInputPlaceholder" => 'Digite um nome, IP ou MAC de usuário'
+            ]
         )
             ->setMethod('GET')
             ->getForm();
@@ -65,7 +68,7 @@ class PPPUserController extends AbstractController
             }
             $page = $request->query->getInt('page', 1);
             $type = $utilities::guessSearchTypeFromQuery($search->getQuery());
-            $cacheKey = hash('sha256', $search->getQuery().serialize($search->getHosts()));
+            $cacheKey = hash('sha256', $search->getQuery() . serialize($search->getHosts()));
             $session = $request->getSession();
             $results = $session->get($cacheKey);
 
@@ -81,7 +84,9 @@ class PPPUserController extends AbstractController
                 $search->setUserId($user->getId());
                 $search->setHosts(
                     array_values(
-                        array_map(fn ($h) => $h['hostid'], $filteredHosts)));
+                        array_map(fn($h) => $h['hostid'], $filteredHosts)
+                    )
+                );
                 $search->setCreatedAt(new \DateTimeImmutable());
                 $search->setType($type);
                 $entityManager->persist($search);
@@ -108,8 +113,8 @@ class PPPUserController extends AbstractController
         HttpClientInterface $httpClient,
         EntityManagerInterface $entityManager,
         #[MapQueryParameter] string $name,
-        #[MapQueryParameter] string $gw): NotFoundHttpException|Response
-    {
+        #[MapQueryParameter] string $gw
+    ): NotFoundHttpException|Response {
         $params = ['hostids' => $gw, 'output' => ['host'], 'selectInterfaces' => ['ip']];
         $result = $zabbix->fetchHosts($params)['result'];
         if (empty($result)) {
@@ -122,7 +127,7 @@ class PPPUserController extends AbstractController
         $manufacturer = null;
         try {
             $apiResponse = $httpClient->
-                request('GET', 'https://www.macvendorlookup.com/api/v2/'.$user['caller-id'])->toArray();
+                request('GET', 'https://www.macvendorlookup.com/api/v2/' . $user['caller-id'])->toArray();
             $manufacturer = $apiResponse[0]['company'];
         } catch (\Throwable $th) {
             $manufacturer = 'N/A';

@@ -16,8 +16,10 @@ class PPPUserSearchFormType extends AbstractType
             'csrf_protection' => false,
             'hosts' => [],
             'allow_extra_fields' => true,
+            'searchInputPlaceholder' => null
         ]);
 
+        $resolver->setAllowedTypes('searchInputPlaceholder',["string", "null"]);
         $resolver->setAllowedTypes('hosts', 'array');
     }
 
@@ -28,7 +30,7 @@ class PPPUserSearchFormType extends AbstractType
             ->add('query', SearchType::class, [
                 'label' => false,
                 'attr' => [
-                    'placeholder' => 'Digite um nome, IP ou MAC de usuário',
+                    'placeholder' => $options["searchInputPlaceholder"],
                 ],
             ])
             ->add('hosts', ChoiceType::class, [

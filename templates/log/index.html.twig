@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+{% block title %}Hello UserController!{% endblock %}
+{% block stylesheets %}<link rel=stylesheet href="{{ asset("hosts.css") }}"></link>{% endblock %}
+{% block javascripts %}<script defer src="{{ asset('gatewayChoiceForm.js') }}"></script>{% endblock %}
+{% block body %}
+    <h1>Pesquisa de logs</h1>
+    <p class="mb-5">
+        Encontre informações relevantes sobre eventos ocorridos em um gateway.
+    </p>
+    {% include 'searchInputWithGatewayCheckboxes.html.twig' %}
+    {% if results %}
+        {% if results.meta.length > 0 %}
+
+        {% else %}
+            <p>Nenhum resultado encontrado.</p>
+        {% endif %}
+    {% endif %}
+{% endblock %}
