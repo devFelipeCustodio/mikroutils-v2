@@ -49,6 +49,7 @@ class ExportController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $export = $form->getData();
+            assert($export instanceof ExportUsers);
             if (false !== array_search('all', $export->getHosts())) {
                 $export->setHosts($allowedHosts);
             }
@@ -62,19 +63,24 @@ class ExportController extends AbstractController
             $results = $gwCollection->getUsers();
             $csv = '';
             foreach ($results['data'] as $gw) {
-                foreach ($gw['data'] as $user) {
-                    $csv .= str_replace(',', "\,", $gw['meta']['hostname']).','.
-                        str_replace(',', "\,", $user['name']).','.
-                        str_replace(',', "\,", $user['caller-id'])."\n";
+                foreach ($gw['data'] as $username) {
+                    $csv .= str_replace(',', "\,", $gw['meta']['hostname']) . ',' .
+                        str_replace(',', "\,", $username['name']) . ',' .
+                        str_replace(',', "\,", $username['caller-id']) . "\n";
                 }
             }
             $response = new Response();
             $response->setContent($csv);
             $response->setStatusCode(200);
             $response->headers->set('Content-Type', 'text/csv');
-            $response->send();
 
-            return null;
+            $export->setUserId($user->getId());
+            $export->setCreatedAt(new \DateTimeImmutable());
+
+            $entityManager->persist($export);
+            $entityManager->flush();
+
+            return $response->send();
         }
 
         return $this->render('export/users.html.twig', [
