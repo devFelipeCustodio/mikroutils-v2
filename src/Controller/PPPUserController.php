@@ -60,7 +60,7 @@ class PPPUserController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $search = $form->getData();
-            if (0 === count($search->getHosts())) {
+            if (false !== array_search('all', $search->getHosts())) {
                 $search->setHosts($allowedHosts);
             }
             $page = $request->query->getInt('page', 1);
@@ -79,7 +79,9 @@ class PPPUserController extends AbstractController
                 $results = $gwCollection->findShortUserDataBy($type, $search->getQuery());
                 $errors = $gwCollection->getErrors();
                 $search->setUserId($user->getId());
-                $search->setHosts($filteredHosts);
+                $search->setHosts(
+                    array_values(
+                        array_map(fn ($h) => $h['hostid'], $filteredHosts)));
                 $search->setCreatedAt(new \DateTimeImmutable());
                 $search->setType($type);
                 $entityManager->persist($search);
