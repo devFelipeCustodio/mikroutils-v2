@@ -97,4 +97,32 @@ final class GatewayCollection
         return $results;
     }
 
+    public function findLogsWith(string $query, ?string $mac){
+        $results["meta"]["length"] = 0;
+        $results["data"] = [];
+
+        foreach ($this->clients as $client) {
+            $hostname = $client["hostname"];
+            $logs = $client["client"]->findLogsWith($query, $mac);
+
+            if ($logs) {
+                $len = count($logs);
+                array_push(
+                    $results["data"],
+                    [
+                        "meta" => [
+                            "hostname" => $hostname,
+                        ],
+                        "data" => $logs,
+                    ]
+
+                );
+                $results["meta"]["length"] += $len;
+            }
+        }
+
+        $results["meta"]["createdAt"] = time();
+        return $results;
+    }
+
 }
