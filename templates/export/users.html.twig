@@ -1,11 +1,13 @@
 {% extends 'base.html.twig' %}
 {% block title %}Detail{% endblock %}
+{% block stylesheets %}<link rel=stylesheet href="{{ asset("hosts.css") }}"></link>{% endblock %}
+{% block javascripts %}<script defer src="{{ asset('gatewayChoiceForm.js') }}"></script>{% endblock %}
 {% block body %}
-<h1>Exportar usuários</h1>
-<p>Uma lista de usuários no formato CSV será gerada contendo o gateway, nome de usuário, MAC e IP.
-{{ form_start(form, {"attr": {"class": "container"}}) }}
-    {{ form_errors(form) }}
-    {{ form_widget(form.hosts, {"attr": {"class": "mb-3"}}) }}
-    <button class="mb-3 btn btn-primary" type="submit">Exportar</button>
-{{ form_end(form) }}
+    <h1>Exportar usuários</h1>
+    <p class="mb-5">Uma lista de usuários no formato CSV será gerada contendo o gateway, nome de usuário, MAC e IP.</p>
+    {{ form_start(form, {"attr": {"class": "container gateway_choice_form" }}) }}
+        {{ form_errors(form) }}
+        {{ form_widget(form.hosts, {"attr": {"class": "mb-3" }}) }}
+        <button class="mb-3 btn btn-primary" type="submit">Exportar</button>
+    {{ form_end(form) }}
 {% endblock %}
