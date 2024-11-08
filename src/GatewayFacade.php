@@ -8,7 +8,9 @@ use \RouterOS\Query;
 
 class GatewayFacade
 {
-    private function __construct(private Client $client) {}
+    private function __construct(private Client $client)
+    {
+    }
 
     public static function connect(Client $client): GatewayFacade
     {
@@ -74,7 +76,7 @@ class GatewayFacade
     {
         $query = new Query("/interface/pppoe-server/monitor");
         $query->equal("numbers", "<pppoe-$name>")->equal("once");
-        $result =  $this->client->query($query)->read();
+        $result = $this->client->query($query)->read();
 
         if (!$this->itemExists($result))
             return null;
@@ -124,12 +126,17 @@ class GatewayFacade
         $logs = $this->client->query($query)->read();
 
         $result = array_filter(array_reverse($logs), function ($log) use (&$name, &$mac) {
-            if (
-                preg_match("/$name/i", $log['message']) ||
-                preg_match("/$mac/i", $log['message'])
-            ) {
-                return true;
+            if (isset($log["message"])) {
+                if (preg_match("/$name/i", $log['message'])) {
+                    return true;
+                }
+                if (isset($mac)) {
+                    if (preg_match("/$mac/i", $log['message'])) {
+                        return true;
+                    }
+                }
             }
+            return false;
         });
         return $result;
     }
