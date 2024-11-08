@@ -23,6 +23,7 @@ class PPPUserSearchFormType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $hosts = array_merge(['Todos' => 'all'], $options['hosts']);
         $builder
             ->add('query', SearchType::class, [
                 'label' => false,
@@ -37,9 +38,15 @@ class PPPUserSearchFormType extends AbstractType
                 'label_attr' => [
                     'class' => 'checkbox-switch',
                 ],
-                'choices' => array_merge(['Todos' => 'all'], $options['hosts']),
+                'choices' => $hosts,
+                'choice_attr' => function ($choice, string $key) {
+                    if ('Todos' === $key) {
+                        return ['checked' => 'checked', 'disabled' => false, 'data-choice-all' => null];
+                    }
+
+                    return [];
+                },
             ])
         ;
     }
 }
-
