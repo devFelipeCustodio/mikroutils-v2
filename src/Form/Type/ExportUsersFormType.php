@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Form;
+namespace App\Form\Type;
 
-use App\Entity\ExportUsers;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -15,8 +13,7 @@ class ExportUsersFormType extends AbstractType
     {
         $resolver->setDefaults([
             'csrf_protection' => false,
-            'hosts' => [],
-            'allow_extra_fields' => true,
+            'hosts' => ['all'],
         ]);
 
         $resolver->setAllowedTypes('hosts', 'array');
@@ -33,7 +30,14 @@ class ExportUsersFormType extends AbstractType
                     'class' => 'checkbox-switch',
                 ],
                 'choices' => array_merge(['Todos' => 'all'], $options['hosts']),
+                'choice_attr' => function ($choice, string $key) {
+                    $attrs = ['disabled' => 'true'];
+                    if ('Todos' === $key) {
+                        return ['checked' => 'checked', 'disabled' => false, 'data-choice-all' => null];
+                    }
+
+                    return $attrs;
+                },
             ]);
-            // TODO setar opção all como default
-    } 
+    }
 }
