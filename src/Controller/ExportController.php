@@ -4,13 +4,11 @@ namespace App\Controller;
 
 use App\Entity\ExportUsers;
 use App\Entity\User;
-use App\Form\ExportUsersFormType;
+use App\Form\Type\ExportUsersFormType;
 use App\GatewayCollection;
 use App\ZabbixAPIClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +21,7 @@ class ExportController extends AbstractController
         Request $request,
         FormFactoryInterface $formFactory,
         ZabbixAPIClient $zabbix,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
     ): ?Response {
         $user = $this->getUser();
         assert($user instanceof User);
@@ -51,9 +49,10 @@ class ExportController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $export = $form->getData();
-            if (0 === count($export->getHosts())) {
+            if (false !== array_search('all', $export->getHosts())) {
                 $export->setHosts($allowedHosts);
             }
+
             $filteredHosts = array_filter($zabbixHosts, function ($h) use (&$export) {
                 if (false !== array_search($h['hostid'], $export->getHosts())) {
                     return true;
@@ -64,9 +63,9 @@ class ExportController extends AbstractController
             $csv = '';
             foreach ($results['data'] as $gw) {
                 foreach ($gw['data'] as $user) {
-                    $csv .= str_replace(',', "\,", $gw['meta']['hostname']) . ',' .
-                        str_replace(',', "\,", $user['name']) . ',' .
-                        str_replace(',', "\,", $user['caller-id']) . "\n";
+                    $csv .= str_replace(',', "\,", $gw['meta']['hostname']).','.
+                        str_replace(',', "\,", $user['name']).','.
+                        str_replace(',', "\,", $user['caller-id'])."\n";
                 }
             }
             $response = new Response();
