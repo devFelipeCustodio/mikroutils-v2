@@ -4,7 +4,8 @@
 {% block javascripts %}<script defer src="{{ asset('gatewayChoiceForm.js') }}"></script>{% endblock %}
 {% block body %}
     <h1>Exportar usuários</h1>
-    <p class="mb-5">Uma lista de usuários no formato CSV será gerada contendo o gateway, nome de usuário, MAC e IP.</p>
+    <p class="mb-3">Uma lista de usuários no formato CSV será gerada contendo o gateway, nome de usuário, MAC e IP.</p>
+    <hr class="mb-5"/>
     {{ form_start(form, {"attr": {"class": "container gateway_choice_form" }}) }}
         {{ form_errors(form) }}
         {{ form_widget(form.hosts, {"attr": {"class": "mb-3" }}) }}

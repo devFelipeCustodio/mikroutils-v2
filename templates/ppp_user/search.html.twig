@@ -4,9 +4,10 @@
 {% block javascripts %}<script defer src="{{ asset('gatewayChoiceForm.js') }}"></script>{% endblock %}
 {% block body %}
     <h1>Pesquisa de usuários</h1>
-    <p class="mb-5">
-        Visualize informações de usuários como o gateway onde está conectado, nome de usuário, IP, MAC ou tempo ativo.
+    <p class="mb-3">
+        Visualize informações de usuários conectados como o gateway, nome de usuário, IP, MAC ou tempo ativo.
     </p>
+    <hr class="mb-5"/>
     {% include 'searchInputWithGatewayCheckboxes.html.twig' %}
     {% if results %}
         {% if results.meta.length > 0 %}
