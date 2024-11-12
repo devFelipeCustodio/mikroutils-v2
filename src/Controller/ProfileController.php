@@ -10,7 +10,6 @@ use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -21,7 +20,7 @@ class ProfileController extends AbstractController
     {
         $form = $this->createFormBuilder(null)
         ->add('oldPassword', PasswordType::class, [
-            'label' => "Senha atual",
+            'label' => 'Senha atual',
         ])
         ->add('newPassword',
             RepeatedType::class,
@@ -37,21 +36,22 @@ class ProfileController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $this->getUser();
+            assert($user instanceof User);
             $data = $form->getData();
-            if (!$passwordHasher->isPasswordValid($user, $data["oldPassword"])) {
-                $this->addFlash("danger", "Senha atual incorreta.");
+            if (!$passwordHasher->isPasswordValid($user, $data['oldPassword'])) {
+                $this->addFlash('danger', 'Senha atual incorreta.');
             } else {
-                $hashedPassword = $passwordHasher->hashPassword($user, $data["newPassword"]);
-                $user->setpassword($hashedPassword);
+                $hashedPassword = $passwordHasher->hashPassword($user, $data['newPassword']);
+                $user->setPassword($hashedPassword);
                 $entityManager->persist($user);
                 $entityManager->flush();
-                $this->addFlash("success", "Senha alterada com sucesso.");
+                $this->addFlash('success', 'Senha alterada com sucesso.');
             }
         }
-        
+
         return $this->render('profile/index.html.twig', [
             'controller_name' => 'ProfileController',
-            'form' => $form
+            'form' => $form,
         ]);
     }
 }

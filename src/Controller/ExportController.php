@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\ExportUsers;
 use App\Entity\User;
 use App\Form\Type\ExportUsersFormType;
-use App\GatewayCollection;
+use App\GatewayService;
 use App\ZabbixAPIClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -59,14 +59,14 @@ class ExportController extends AbstractController
                     return true;
                 }
             });
-            $gwCollection = new GatewayCollection($filteredHosts);
-            $results = $gwCollection->getUsers();
+            $gwService = new GatewayService($filteredHosts);
+            $results = $gwService->getUsers();
             $csv = '';
             foreach ($results['data'] as $gw) {
                 foreach ($gw['data'] as $username) {
-                    $csv .= str_replace(',', "\,", $gw['meta']['hostname']) . ',' .
-                        str_replace(',', "\,", $username['name']) . ',' .
-                        str_replace(',', "\,", $username['caller-id']) . "\n";
+                    $csv .= str_replace(',', "\,", $gw['meta']['hostname']).','.
+                        str_replace(',', "\,", $username['name']).','.
+                        str_replace(',', "\,", $username['caller-id'])."\n";
                 }
             }
             $response = new Response();

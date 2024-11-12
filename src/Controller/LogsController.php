@@ -3,8 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\LogSearch;
+use App\Entity\User;
 use App\Form\Type\PPPUserSearchFormType;
-use App\GatewayCollection;
+use App\GatewayService;
 use App\Utilities;
 use App\ZabbixAPIClient;
 use Doctrine\ORM\EntityManagerInterface;
@@ -43,7 +44,7 @@ class LogsController extends AbstractController
             $log,
             [
                 'hosts' => $hostTable,
-                "searchInputPlaceholder" => 'O que deseja pesquisar?'
+                'searchInputPlaceholder' => 'O que deseja pesquisar?',
             ]
         )
             ->setMethod('GET')
@@ -67,13 +68,13 @@ class LogsController extends AbstractController
                 }
             });
 
-            $gwCollection = new GatewayCollection($filteredHosts);
-            $results = $gwCollection->findLogsWith($log->getQuery(), null);
-            $errors = $gwCollection->getErrors();
+            $gwService = new GatewayService($filteredHosts);
+            $results = $gwService->findLogsWith($log->getQuery(), null);
+            $errors = $gwService->getErrors();
             $log->setUserId($user->getId());
             $log->setHosts(
                 array_values(
-                    array_map(fn($h) => $h['hostid'], $filteredHosts)
+                    array_map(fn ($h) => $h['hostid'], $filteredHosts)
                 )
             );
             $log->setCreatedAt(new \DateTimeImmutable());
