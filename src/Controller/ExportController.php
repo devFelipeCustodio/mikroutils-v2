@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\ExportUsers;
+use App\Entity\ClientExport;
 use App\Entity\User;
 use App\Form\Type\ExportUsersFormType;
 use App\GatewayService;
@@ -34,7 +34,7 @@ class ExportController extends AbstractController
             $hostTable[$h['host']] = $h['hostid'];
         }
 
-        $export = new ExportUsers();
+        $export = new ClientExport();
 
         $form = $formFactory->createNamedBuilder(
             '',
@@ -49,7 +49,7 @@ class ExportController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $export = $form->getData();
-            assert($export instanceof ExportUsers);
+            assert($export instanceof ClientExport);
             if (false !== array_search('all', $export->getHosts())) {
                 $export->setHosts($allowedHosts);
             }
