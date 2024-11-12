@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\LogSearchRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: LogSearchRepository::class)]
@@ -13,8 +14,9 @@ class LogSearch
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?int $user_id = null;
+    #[ORM\ManyToOne(inversedBy: 'logSearches')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
 
     #[ORM\Column(length: 255)]
     private ?string $query = null;
@@ -22,7 +24,7 @@ class LogSearch
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::SIMPLE_ARRAY)]
     private array $hosts = [];
 
     public function getId(): ?int
@@ -30,14 +32,14 @@ class LogSearch
         return $this->id;
     }
 
-    public function getUserId(): ?int
+    public function getUserId(): ?User
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(int $user_id): static
+    public function setUserId(?User $user): static
     {
-        $this->user_id = $user_id;
+        $this->user = $user;
 
         return $this;
     }

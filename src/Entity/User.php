@@ -3,6 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -35,8 +38,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
 
-    #[ORM\Column]
-    private array $allowed_host_ids = [];
+    #[ORM\Column(type: Types::SIMPLE_ARRAY)]
+    private array $allowedHostIds = [];
+
+    /**
+     * @var Collection<int, ClientSearch>
+     */
+    #[ORM\OneToMany(targetEntity: ClientSearch::class, mappedBy: 'user')]
+    private Collection $clientSearches;
+
+    /**
+     * @var Collection<int, LogSearch>
+     */
+    #[ORM\OneToMany(targetEntity: LogSearch::class, mappedBy: 'user')]
+    private Collection $logSearches;
+
+    /**
+     * @var Collection<int, ClientExport>
+     */
+    #[ORM\OneToMany(targetEntity: ClientExport::class, mappedBy: 'user')]
+    private Collection $clientExports;
+
+
+    public function __construct()
+    {
+        $this->userSearches = new ArrayCollection();
+        $this->clientSearches = new ArrayCollection();
+        $this->logSearches = new ArrayCollection();
+        $this->clientExports = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -127,13 +157,105 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getAllowedHostIds(): array
     {
-        return $this->allowed_host_ids;
+        return $this->allowedHostIds;
     }
 
-    public function setAllowedHostIds(array $allowed_host_ids): static
+    public function setAllowedHostIds(array $allowedHostIds): static
     {
-        $this->allowed_host_ids = $allowed_host_ids;
+        $this->allowedHostIds = $allowedHostIds;
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, ClientSearch>
+     */
+    public function getClientSearches(): Collection
+    {
+        return $this->clientSearches;
+    }
+
+    public function addClientSearch(ClientSearch $clientSearch): static
+    {
+        if (!$this->clientSearches->contains($clientSearch)) {
+            $this->clientSearches->add($clientSearch);
+            $clientSearch->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClientSearch(ClientSearch $clientSearch): static
+    {
+        if ($this->clientSearches->removeElement($clientSearch)) {
+            // set the owning side to null (unless already changed)
+            if ($clientSearch->getUserId() === $this) {
+                $clientSearch->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LogSearch>
+     */
+    public function getLogSearches(): Collection
+    {
+        return $this->logSearches;
+    }
+
+    public function addLogSearch(LogSearch $logSearch): static
+    {
+        if (!$this->logSearches->contains($logSearch)) {
+            $this->logSearches->add($logSearch);
+            $logSearch->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLogSearch(LogSearch $logSearch): static
+    {
+        if ($this->logSearches->removeElement($logSearch)) {
+            // set the owning side to null (unless already changed)
+            if ($logSearch->getUserId() === $this) {
+                $logSearch->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ClientExport>
+     */
+    public function getClientExports(): Collection
+    {
+        return $this->clientExports;
+    }
+
+    public function addClientExport(ClientExport $clientExport): static
+    {
+        if (!$this->clientExports->contains($clientExport)) {
+            $this->clientExports->add($clientExport);
+            $clientExport->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClientExport(ClientExport $clientExport): static
+    {
+        if ($this->clientExports->removeElement($clientExport)) {
+            // set the owning side to null (unless already changed)
+            if ($clientExport->getUserId() === $this) {
+                $clientExport->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+
 }

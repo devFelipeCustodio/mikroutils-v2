@@ -2,21 +2,22 @@
 
 namespace App\Entity;
 
-use App\Repository\ExportUsersRepository;
+use App\Repository\ClientExportRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ExportUsersRepository::class)]
-class ExportUsers
+#[ORM\Entity(repositoryClass: ClientExportRepository::class)]
+class ClientExport
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?int $user_id = null;
+    #[ORM\ManyToOne(inversedBy: 'clientExports')]
+    private ?User $user = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::SIMPLE_ARRAY)]
     private array $hosts = [];
 
     #[ORM\Column]
@@ -27,14 +28,14 @@ class ExportUsers
         return $this->id;
     }
 
-    public function getUserId(): ?int
+    public function getUserId(): ?User
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(int $user_id): static
+    public function setUserId(?User $user): static
     {
-        $this->user_id = $user_id;
+        $this->user = $user;
 
         return $this;
     }

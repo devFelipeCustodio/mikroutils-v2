@@ -2,39 +2,39 @@
 
 namespace App\Repository;
 
-use App\Entity\ExportUsers;
+use App\Entity\ClientExport;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<ExportUsers>
+ * @extends ServiceEntityRepository<ClientExport>
  */
-class ExportUsersRepository extends ServiceEntityRepository
+class ClientExportRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ExportUsers::class);
+        parent::__construct($registry, ClientExport::class);
     }
 
     //    /**
-    //     * @return ExportUsers[] Returns an array of ExportUsers objects
+    //     * @return ClientExport[] Returns an array of ClientExport objects
     //     */
     //    public function findByExampleField($value): array
     //    {
-    //        return $this->createQueryBuilder('e')
-    //            ->andWhere('e.exampleField = :val')
+    //        return $this->createQueryBuilder('c')
+    //            ->andWhere('c.exampleField = :val')
     //            ->setParameter('val', $value)
-    //            ->orderBy('e.id', 'ASC')
+    //            ->orderBy('c.id', 'ASC')
     //            ->setMaxResults(10)
     //            ->getQuery()
     //            ->getResult()
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?ExportUsers
+    //    public function findOneBySomeField($value): ?ClientExport
     //    {
-    //        return $this->createQueryBuilder('e')
-    //            ->andWhere('e.exampleField = :val')
+    //        return $this->createQueryBuilder('c')
+    //            ->andWhere('c.exampleField = :val')
     //            ->setParameter('val', $value)
     //            ->getQuery()
     //            ->getOneOrNullResult()

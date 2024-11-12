@@ -2,28 +2,30 @@
 
 namespace App\Entity;
 
-use App\Repository\SearchRepository;
+use App\Repository\ClientSearchRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: SearchRepository::class)]
-class Search
+#[ORM\Entity(repositoryClass: ClientSearchRepository::class)]
+class ClientSearch
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $query = null;
-
-    #[ORM\Column]
-    private ?int $user_id = null;
+    #[ORM\ManyToOne(inversedBy: 'clientSearches')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::SIMPLE_ARRAY)]
     private array $hosts = [];
+
+    #[ORM\Column(length: 255)]
+    private ?string $query = null;
 
     #[ORM\Column(length: 255)]
     private ?string $type = null;
@@ -33,26 +35,14 @@ class Search
         return $this->id;
     }
 
-    public function getQuery(): ?string
+    public function getUserId(): ?User
     {
-        return $this->query;
+        return $this->user;
     }
 
-    public function setQuery(string $q): static
+    public function setUserId(?User $user): static
     {
-        $this->query = $q;
-
-        return $this;
-    }
-
-    public function getUserId(): ?int
-    {
-        return $this->user_id;
-    }
-
-    public function setUserId(int $user_id): static
-    {
-        $this->user_id = $user_id;
+        $this->user = $user;
 
         return $this;
     }
@@ -77,6 +67,18 @@ class Search
     public function setHosts(array $hosts): static
     {
         $this->hosts = $hosts;
+
+        return $this;
+    }
+
+    public function getQuery(): ?string
+    {
+        return $this->query;
+    }
+
+    public function setQuery(string $query): static
+    {
+        $this->query = $query;
 
         return $this;
     }
