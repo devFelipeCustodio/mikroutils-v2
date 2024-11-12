@@ -7,7 +7,7 @@ use App\Entity\User;
 use App\Form\Type\PPPUserSearchFormType;
 use App\GatewayFacade;
 use App\GatewayService;
-use App\PPPUserSearchPaginator;
+use App\ClientSearchPaginator;
 use App\Utilities;
 use App\ZabbixAPIClient;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class PPPUserController extends AbstractController
+class ClientController extends AbstractController
 {
     #[Route('/ppp_user/search', name: 'app_ppp_user_search', methods: 'GET')]
     public function search(
@@ -79,7 +79,7 @@ class PPPUserController extends AbstractController
             $search->setUserId($user->getId());
             $search->setHosts(
                 array_values(
-                    array_map(fn ($h) => $h['hostid'], $filteredHosts)
+                    array_map(fn($h) => $h['hostid'], $filteredHosts)
                 )
             );
             $search->setCreatedAt(new \DateTimeImmutable());
@@ -87,7 +87,7 @@ class PPPUserController extends AbstractController
             $entityManager->persist($search);
             $entityManager->flush();
 
-            $paginator = new PPPUserSearchPaginator($results, $page);
+            $paginator = new ClientSearchPaginator($results, $page);
             $results = $paginator->paginate();
         }
 
@@ -119,7 +119,7 @@ class PPPUserController extends AbstractController
         $manufacturer = null;
         try {
             $apiResponse = $httpClient->
-                request('GET', 'https://www.macvendorlookup.com/api/v2/'.$user['caller-id'])->toArray();
+                request('GET', 'https://www.macvendorlookup.com/api/v2/' . $user['caller-id'])->toArray();
             $manufacturer = $apiResponse[0]['company'];
         } catch (\Throwable $th) {
             $manufacturer = 'N/A';

@@ -1,9 +1,8 @@
 <?php
 
 namespace App;
-use Exception;
 
-class PPPUserSearchPaginator
+class ClientSearchPaginator
 {
     private $total = 0;
     private int $itemsPerPage;
