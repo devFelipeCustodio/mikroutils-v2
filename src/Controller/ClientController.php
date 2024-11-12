@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Search;
+use App\Entity\ClientSearch;
 use App\Entity\User;
 use App\Form\Type\PPPUserSearchFormType;
 use App\GatewayFacade;
@@ -22,7 +22,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ClientController extends AbstractController
 {
-    #[Route('/ppp_user/search', name: 'app_ppp_user_search', methods: 'GET')]
+    #[Route('/client', name: 'app_client_search', methods: 'GET')]
     public function search(
         Request $request,
         ZabbixAPIClient $zabbix,
@@ -41,7 +41,7 @@ class ClientController extends AbstractController
             $hostTable[$h['host']] = $h['hostid'];
         }
 
-        $search = new Search();
+        $search = new ClientSearch();
 
         $form = $formFactory->createNamedBuilder(
             '',
@@ -91,14 +91,14 @@ class ClientController extends AbstractController
             $results = $paginator->paginate();
         }
 
-        return $this->render('ppp_user/search.html.twig', [
+        return $this->render('client/index.html.twig', [
             'form' => $form,
             'results' => $results,
             'errors' => $errors,
         ]);
     }
 
-    #[Route('/ppp_user/detail', name: 'app_ppp_user_detail', methods: 'GET')]
+    #[Route('/client/detail', name: 'app_client_detail', methods: 'GET')]
     public function detail(
         Request $request,
         ZabbixAPIClient $zabbix,
@@ -125,7 +125,7 @@ class ClientController extends AbstractController
             $manufacturer = 'N/A';
         }
 
-        return $this->render('ppp_user/detail.html.twig', [
+        return $this->render('client/detail/index.html.twig', [
             'name' => $user['user'],
             'gw' => $result[0]['host'],
             'manufacturer' => $manufacturer,
