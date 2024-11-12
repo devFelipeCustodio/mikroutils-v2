@@ -29,7 +29,6 @@ class ProfileController extends AbstractController
                 'first_options' => ['label' => 'Nova senha'],
                 'second_options' => ['label' => 'Repetir nova senha'],
             ])
-            ->add('Salvar', SubmitType::class)
             ->getForm();
 
         $form->handleRequest(request: $request);
