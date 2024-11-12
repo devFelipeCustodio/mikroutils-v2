@@ -62,16 +62,20 @@ final class GatewayService
             });
 
             $logs = unserialize($logs);
+            $filtered = array_filter($logs, function ($log) use (&$query) {
+                $regex = preg_match("/$query/i", $log);
 
-            if ($logs) {
-                $len = count($logs);
+                return 1 === $regex;
+            });
+            if ($filtered) {
+                $len = count($filtered);
                 array_push(
                     $results['data'],
                     [
                         'meta' => [
                             'hostname' => $hostname,
                         ],
-                        'data' => $logs,
+                        'data' => $filtered,
                     ]
                 );
                 $results['meta']['length'] += $len;
@@ -144,8 +148,8 @@ final class GatewayService
 
                 return 1 === $regex;
             });
-            if ($users) {
-                $len = count($users);
+            if ($filtered) {
+                $len = count($filtered);
                 array_push(
                     $results['data'],
                     [
@@ -153,7 +157,7 @@ final class GatewayService
                             'hostname' => $hostname,
                             'ip' => $ip,
                         ],
-                        'data' => $users,
+                        'data' => $filtered,
                     ]
                 );
                 $results['meta']['length'] += $len;
@@ -165,13 +169,13 @@ final class GatewayService
 
     public function getFullUserDataByName(string $name): array
     {
-        $interfaceOverview = $this->gateway->findPPPoEInterfaceOverview($name);
-        $queue = $this->gateway->findPPPoEQueue($name);
-        $interface = $this->gateway->findPPPoEInterface($name);
-
-        if (!$interfaceOverview || !$interface) {
+        $interfaceOverview = $this->gateways[0]['client']->findPPPoEInterfaceOverview($name);
+        if (!$interfaceOverview) {
             throw new \Exception('Usuário inexistente!');
         }
+        $queue = $this->gateways[0]['client']->findPPPoEQueue($name);
+        $interface = $this->gateways[0]['client']->findPPPoEInterface($name);
+
 
         return [
             'user' => $interfaceOverview['user'],
