@@ -3,16 +3,16 @@
 {% block stylesheets %}<link rel=stylesheet href="{{ asset("hosts.css") }}"></link>{% endblock %}
 {% block javascripts %}<script defer src="{{ asset('gatewayChoiceForm.js') }}"></script>{% endblock %}
 {% block body %}
-    <h1>Pesquisa de usuários</h1>
+    <h1>Pesquisa de clientes</h1>
     <p class="mb-3">
-        Visualize informações de usuários conectados como o gateway, nome de usuário, IP, MAC ou tempo ativo.
+        Visualize informações de clientes conectados como o seu gateway, nome de usuário, IP, MAC ou tempo ativo.
     </p>
-    <hr class="mb-5"/>
+    <hr class="mb-5" />
     {% include 'searchInputWithGatewayCheckboxes.html.twig' %}
     {% if results %}
         {% if results.meta.length > 0 %}
             <div class="table-responsive">
-                <table class="mb-3 table">
+                <table class="mb-3 table text-center">
                     <thead>
                         <tr>
                             <th scope="col">Gateway</th>
@@ -33,7 +33,7 @@
                                     <td class="py-3">{{ user["caller-id"] }}</td>
                                     <td class="py-3">{{ user.uptime }}</td>
                                     <td class="py-3">
-                                        <a href="#">
+                                        <a href="/client/{{ gw.meta.id }}/{{ user.name }}">
                                             <svg xmlns="http://www.w3.org/2000/svg"
                                                  height="24px"
                                                  viewbox="0 -960 960 960"
@@ -78,7 +78,7 @@
                                                         }) %}
                             {% set queryString = previousPageParams | url_encode %}
                             <a class="page-link {% if not results.meta.previous %}disabled{% endif %}"
-                               href="{{ url("app_ppp_user_search") }}?{{ queryString }}">Anterior</a>
+                               href="{{ url("app_client_search") }}?{{ queryString }}">Anterior</a>
                         </li>
                         <li class="page-item">
                             {% set nextPageParams = params | merge({
@@ -86,7 +86,7 @@
                                                         }) %}
                             {% set queryString = nextPageParams | url_encode %}
                             <a class="page-link {% if not results.meta.next %}disabled{% endif %}"
-                               href="{{ url("app_ppp_user_search") }}?{{ queryString }}">Próxima</a>
+                               href="{{ url("app_client_search") }}?{{ queryString }}">Próxima</a>
                         </li>
                     </ul>
                 </nav>
