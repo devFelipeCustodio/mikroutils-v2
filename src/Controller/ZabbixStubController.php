@@ -16,20 +16,19 @@ class ZabbixStubController extends AbstractController
             [
                 'result' => [
                     [
-                        'hostid' => '11131',
-                        'host' => 'GW-VIRTUAL-1',
-                        'interfaces' => [
-                            ['ip' => '192.168.1.100'],
-                        ],
-                    ],
-                    [
                         'hostid' => '11132',
                         'host' => 'GW-VIRTUAL-2',
                         'interfaces' => [
                             ['ip' => '192.168.1.101'],
                         ],
                     ],
-
+                    [
+                        'hostid' => '11131',
+                        'host' => 'GW-VIRTUAL-1',
+                        'interfaces' => [
+                            ['ip' => '192.168.1.100'],
+                        ],
+                    ],
                     [
                         'hostid' => '11133',
                         'host' => 'GW-VIRTUAL-3',
