@@ -2,20 +2,19 @@
 
 namespace App\Controller;
 
+use App\ClientSearchPaginator;
 use App\Entity\ClientSearch;
 use App\Entity\User;
 use App\Form\Type\PPPUserSearchFormType;
-use App\GatewayFacade;
 use App\GatewayService;
-use App\ClientSearchPaginator;
 use App\Utilities;
 use App\ZabbixAPIClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -68,18 +67,13 @@ class ClientController extends AbstractController
             $page = $request->query->getInt('page', 1);
             $type = $utilities::guessSearchTypeFromQuery($search->getQuery());
 
-            $filteredHosts = array_filter($zabbixHosts, function ($h) use (&$search) {
-                if (false !== array_search($h['hostid'], $search->getHosts())) {
-                    return true;
-                }
-            });
-            $gwService = new GatewayService($filteredHosts);
+            $gwService = new GatewayService($zabbixHosts);
             $results = $gwService->getShortUserDataBy($type, $search->getQuery());
             $errors = $gwService->getErrors();
-            $search->setUserId($user->getId());
+            $search->setUser($user);
             $search->setHosts(
                 array_values(
-                    array_map(fn($h) => $h['hostid'], $filteredHosts)
+                    array_map(fn ($h) => $h['hostid'], $zabbixHosts)
                 )
             );
             $search->setCreatedAt(new \DateTimeImmutable());
@@ -98,28 +92,31 @@ class ClientController extends AbstractController
         ]);
     }
 
-    #[Route('/client/detail', name: 'app_client_detail', methods: 'GET')]
+    #[Route('/client/{gw}/{name}', name: 'app_client_detail', methods: 'GET')]
     public function detail(
-        Request $request,
         ZabbixAPIClient $zabbix,
         HttpClientInterface $httpClient,
-        EntityManagerInterface $entityManager,
-        #[MapQueryParameter] string $name,
-        #[MapQueryParameter] string $gw,
-    ): NotFoundHttpException|Response {
+        string $gw,
+        string $name,
+    ): NotFoundHttpException|Response|RedirectResponse {
         $params = ['hostids' => $gw, 'output' => ['host'], 'selectInterfaces' => ['ip']];
         $result = $zabbix->fetchHosts($params)['result'];
         if (empty($result)) {
             return $this->createNotFoundException();
         }
-        $config = GatewayFacade::createConfig($result[0]['interfaces'][0]['ip']);
-        $client = $client = GatewayFacade::createClient($config);
-        $gwService = new GatewayService(GatewayFacade::connect($client));
-        $user = $gwService->getFullUserDataByName($name);
+        $gw = new GatewayService($result);
+        $errors = $gw->getErrors();
+        if (!empty($errors)) {
+            $this->addFlash('danger', $errors[0]['hostname'].': '.$errors[0]['message']
+            );
+
+            return $this->redirectToRoute('app_client_search');
+        }
+        $user = $gw->getFullUserDataByName($name);
         $manufacturer = null;
         try {
             $apiResponse = $httpClient->
-                request('GET', 'https://www.macvendorlookup.com/api/v2/' . $user['caller-id'])->toArray();
+                request('GET', 'https://www.macvendorlookup.com/api/v2/'.$user['caller-id'])->toArray();
             $manufacturer = $apiResponse[0]['company'];
         } catch (\Throwable $th) {
             $manufacturer = 'N/A';
