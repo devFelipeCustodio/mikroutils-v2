@@ -71,7 +71,7 @@ class LogsController extends AbstractController
             $gwService = new GatewayService($filteredHosts);
             $results = $gwService->findLogsWith($log->getQuery(), null);
             $errors = $gwService->getErrors();
-            $log->setUserId($user->getId());
+            $log->setUser($user);
             $log->setHosts(
                 array_values(
                     array_map(fn ($h) => $h['hostid'], $filteredHosts)

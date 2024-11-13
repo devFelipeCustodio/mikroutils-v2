@@ -74,7 +74,7 @@ class ExportController extends AbstractController
             $response->setStatusCode(200);
             $response->headers->set('Content-Type', 'text/csv');
 
-            $export->setUserId($user->getId());
+            $export->setUser($user);
             $export->setCreatedAt(new \DateTimeImmutable());
 
             $entityManager->persist($export);
