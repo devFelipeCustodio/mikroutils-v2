@@ -32,12 +32,12 @@ class LogSearch
         return $this->id;
     }
 
-    public function getUserId(): ?User
+    public function getUser(): ?User
     {
         return $this->user;
     }
 
-    public function setUserId(?User $user): static
+    public function setUser(?User $user): static
     {
         $this->user = $user;
 
@@ -73,7 +73,10 @@ class LogSearch
         return $this->hosts;
     }
 
-    public function setHosts(array $hosts): static
+    /**
+     * @param array<int,mixed> $hosts
+     */
+    public function setHosts(array $hosts): LogSearch
     {
         $this->hosts = $hosts;
 

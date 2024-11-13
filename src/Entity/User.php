@@ -59,10 +59,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: ClientExport::class, mappedBy: 'user')]
     private Collection $clientExports;
 
-
     public function __construct()
     {
-        $this->userSearches = new ArrayCollection();
         $this->clientSearches = new ArrayCollection();
         $this->logSearches = new ArrayCollection();
         $this->clientExports = new ArrayCollection();
@@ -90,7 +88,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *
      * @see UserInterface
      */
-    public function getUserIdentifier(): string
+    public function getUserentifier(): string
     {
         return (string) $this->username;
     }
@@ -160,7 +158,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->allowedHostIds;
     }
 
-    public function setAllowedHostIds(array $allowedHostIds): static
+    /**
+     * @param array<int,mixed> $allowedHostIds
+     */
+    public function setAllowedHostIds(array $allowedHostIds): User
     {
         $this->allowedHostIds = $allowedHostIds;
 
@@ -179,7 +180,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->clientSearches->contains($clientSearch)) {
             $this->clientSearches->add($clientSearch);
-            $clientSearch->setUserId($this);
+            $clientSearch->setUser($this);
         }
 
         return $this;
@@ -189,8 +190,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->clientSearches->removeElement($clientSearch)) {
             // set the owning side to null (unless already changed)
-            if ($clientSearch->getUserId() === $this) {
-                $clientSearch->setUserId(null);
+            if ($clientSearch->getUser() === $this) {
+                $clientSearch->setUser(null);
             }
         }
 
@@ -209,7 +210,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->logSearches->contains($logSearch)) {
             $this->logSearches->add($logSearch);
-            $logSearch->setUserId($this);
+            $logSearch->setUser($this);
         }
 
         return $this;
@@ -219,8 +220,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->logSearches->removeElement($logSearch)) {
             // set the owning side to null (unless already changed)
-            if ($logSearch->getUserId() === $this) {
-                $logSearch->setUserId(null);
+            if ($logSearch->getUser() === $this) {
+                $logSearch->setUser(null);
             }
         }
 
@@ -239,7 +240,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->clientExports->contains($clientExport)) {
             $this->clientExports->add($clientExport);
-            $clientExport->setUserId($this);
+            $clientExport->setUser($this);
         }
 
         return $this;
@@ -249,13 +250,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->clientExports->removeElement($clientExport)) {
             // set the owning side to null (unless already changed)
-            if ($clientExport->getUserId() === $this) {
-                $clientExport->setUserId(null);
+            if ($clientExport->getUser() === $this) {
+                $clientExport->setUser(null);
             }
         }
 
         return $this;
     }
 
-
+    public function getUserIdentifier(): string
+    {
+        return $this->getUsername();
+    }
 }
