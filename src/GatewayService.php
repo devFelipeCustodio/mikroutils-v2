@@ -18,11 +18,13 @@ final class GatewayService
     public function __construct(private array $hosts, private FilesystemAdapter $cache = new FilesystemAdapter(), private ?array $hostidsFromSearch = [])
     {
         foreach ($hosts as $host) {
+            $id = $host['hostid'];
             $hostname = $host['host'];
             $ip = $host['interfaces'][0]['ip'];
             try {
                 $client = GatewayFacade::createClient(GatewayFacade::createConfig($ip));
                 $this->gateways[] = [
+                    'id' => $id,
                     'hostname' => $hostname,
                     'ip' => $ip,
                     'client' => GatewayFacade::connect($client),
@@ -94,6 +96,8 @@ final class GatewayService
         foreach ($this->gateways as $gateway) {
             $hostname = $gateway['hostname'];
             $client = $gateway['client'];
+            $id = $gateway['id'];
+
             $users = $this->cache->get('gateway.users.'.$hostname, function (ItemInterface $item) use (&$client): string {
                 $item->expiresAfter(60);
 
@@ -111,6 +115,7 @@ final class GatewayService
                     [
                         'meta' => [
                             'hostname' => $hostname,
+                            'id' => $id,
                         ],
                         'data' => $users,
                     ]
@@ -134,6 +139,8 @@ final class GatewayService
         foreach ($this->gateways as $gateway) {
             $client = $gateway['client'];
             $hostname = $gateway['hostname'];
+            $id = $gateway['id'];
+
             $ip = $gateway['ip'];
 
             $users = $this->cache->get('gateway.users.'.$hostname, function (ItemInterface $item) use (&$client): string {
@@ -156,6 +163,7 @@ final class GatewayService
                         'meta' => [
                             'hostname' => $hostname,
                             'ip' => $ip,
+                            'id' => $id,
                         ],
                         'data' => $filtered,
                     ]
@@ -175,7 +183,6 @@ final class GatewayService
         }
         $queue = $this->gateways[0]['client']->findPPPoEQueue($name);
         $interface = $this->gateways[0]['client']->findPPPoEInterface($name);
-
 
         return [
             'user' => $interfaceOverview['user'],
