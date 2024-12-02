@@ -1,98 +1,99 @@
 {% extends 'base.html.twig' %}
-{% block title %}Hello UserController!{% endblock %}
-{% block stylesheets %}<link rel=stylesheet href="{{ asset("hosts.css") }}"></link>{% endblock %}
-{% block javascripts %}<script defer src="{{ asset('gatewayChoiceForm.js') }}"></script>{% endblock %}
-{% block body %}
-    <h1>Pesquisa de clientes</h1>
-    <p class="mb-3">
-        Visualize informações de clientes conectados como o seu gateway, nome de usuário, IP, MAC ou tempo ativo.
-    </p>
-    <hr class="mb-5" />
-    {% include 'searchInputWithGatewayCheckboxes.html.twig' %}
-    {% if results %}
-        {% if results.meta.length > 0 %}
-            <div class="table-responsive">
-                <table class="mb-3 table text-center">
-                    <thead>
-                        <tr>
-                            <th scope="col">Gateway</th>
-                            <th scope="col">Usuário</th>
-                            <th scope="col">IP público</th>
-                            <th scope="col">MAC</th>
-                            <th scope="col">Ativo por</th>
-                            <th scope="col">Detalhes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for gw in results.data %}
-                            {% for user in gw.data %}
-                                <tr>
-                                    <td class="py-3">{{ gw.meta.hostname }}</td>
-                                    <td class="py-3">{{ user.name }}</td>
-                                    <td class="py-3">{{ user.address }}</td>
-                                    <td class="py-3">{{ user["caller-id"] }}</td>
-                                    <td class="py-3">{{ user.uptime }}</td>
-                                    <td class="py-3">
-                                        <a href="/client/{{ gw.meta.id }}/{{ user.name }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                 height="24px"
-                                                 viewbox="0 -960 960 960"
-                                                 width="24px"
-                                                 fill="currentColor">
-                                                <path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z" />
-                                            </svg>
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <p class="text-end">
-                Exibindo
-                {% if results.meta.length == 1 %}
-                    {{ results.meta.length }}
-                {% elseif results.meta.length < results.meta.itemsPerPage %}
-                    {{ results.meta.length * results.meta.currentPage - results.meta.length + 1 }}-{{ results.meta.length }}
-                {% else %}
-                    {{ results.meta.itemsPerPage * results.meta.currentPage - results.meta.itemsPerPage + 1 }}-
-                    {%- if results.meta.itemsPerPage * results.meta.currentPage > results.meta.length %}
-                        {{- results.meta.length -}}
-                    {% else %}
-                        {{- results.meta.itemsPerPage * results.meta.currentPage -}}
-                    {% endif -%}
-                {% endif %}
-                de
-                {{ results.meta.length }}
-                items
-            </p>
-            {% if results.meta.length > results.meta.itemsPerPage %}
-                <nav class="mb-5 d-flex justify-content-center"
-                     aria-label="Paginação de resultados de pesquisa">
-                    <ul class="pagination">
-                        {% set params = app.request.query %}
-                        <li class="page-item">
-                            {% set previousPageParams = params | merge({
+{% set query = app.request.query.get("query") %}
+{% block title %}
+	{% if query %}
+		Pesquisando por "{{query}}"
+	{% else %}
+		Pesquisa de clientes
+	{% endif %}
+	:: Mikroutils
+{% endblock %}
+{% block stylesheets %}<link rel="stylesheet" href="{{ asset("assets/hosts.css") }}"></link>{% endblock %}{% block javascripts %}
+<script defer src="{{ asset('assets/gatewayChoiceForm.js') }}"></script>{% endblock %}{% block body %}
+<div class="mb-5 border-bottom">
+	<h1>Pesquisa de clientes</h1>
+	<p class="mb-3">
+		Visualize informações de clientes conectados como o seu gateway, nome de usuário, IP, MAC ou tempo ativo.
+	</p>
+</div>
+{% include 'searchInputWithGatewayCheckboxes.html.twig' %}
+{% include 'gatewayError.html.twig' %}
+{% if results %}
+	{% if results.meta.length > 0 %}
+		<div class="table-responsive">
+			<table class="mb-3 table text-center">
+				<thead>
+					<tr>
+						<th scope="col">Gateway</th>
+						<th scope="col">Usuário</th>
+						<th scope="col">IP público</th>
+						<th scope="col">MAC</th>
+						<th scope="col">Ativo por</th>
+						<th scope="col">Detalhes</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for gw in results.data %}
+						{% for user in gw.data %}
+							<tr>
+								<td class="py-3">{{ gw.meta.hostname }}</td>
+								<td class="py-3">{{ user.name }}</td>
+								<td class="py-3">{{ user.address }}</td>
+								<td class="py-3">{{ user["caller-id"] }}</td>
+								<td class="py-3">{{ user.uptime }}</td>
+								<td class="py-3">
+									<a href="/client/{{ gw.meta.id }}/{{ user.name }}">
+										<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewbox="0 -960 960 960" width="24px" fill="currentColor">
+											<path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
+										</svg>
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		<p class="text-end">
+			Exibindo
+			{% if results.meta.length == 1 %}
+				{{ results.meta.length }}
+			{% elseif results.meta.length < results.meta.itemsPerPage %}
+				{{ results.meta.length * results.meta.currentPage - results.meta.length + 1 }}-{{ results.meta.length }}
+			{% else %}
+				{{ results.meta.itemsPerPage * results.meta.currentPage - results.meta.itemsPerPage + 1 }}-
+				{%- if results.meta.itemsPerPage * results.meta.currentPage > results.meta.length %}
+					{{- results.meta.length -}}
+				{% else %}
+					{{- results.meta.itemsPerPage * results.meta.currentPage -}}
+				{% endif -%}
+			{% endif %}
+			de
+			{{ results.meta.length }}
+			items
+		</p>
+		{% if results.meta.length > results.meta.itemsPerPage %}
+			<nav class="mb-5 d-flex justify-content-center" aria-label="Paginação de resultados de pesquisa">
+				<ul class="pagination">
+					{% set params = app.request.query %}
+					<li class="page-item">
+						{% set previousPageParams = params | merge({
                                                             "page" : results.meta.currentPage - 1
                                                         }) %}
-                            {% set queryString = previousPageParams | url_encode %}
-                            <a class="page-link {% if not results.meta.previous %}disabled{% endif %}"
-                               href="{{ url("app_client_search") }}?{{ queryString }}">Anterior</a>
-                        </li>
-                        <li class="page-item">
-                            {% set nextPageParams = params | merge({
+						{% set queryString = previousPageParams | url_encode %}
+						<a class="page-link {% if not results.meta.previous %}disabled{% endif %}" href="{{ url("app_client_search") }}?{{ queryString }}">Anterior</a>
+					</li>
+					<li class="page-item">
+						{% set nextPageParams = params | merge({
                                                             "page" : results.meta.currentPage + 1
                                                         }) %}
-                            {% set queryString = nextPageParams | url_encode %}
-                            <a class="page-link {% if not results.meta.next %}disabled{% endif %}"
-                               href="{{ url("app_client_search") }}?{{ queryString }}">Próxima</a>
-                        </li>
-                    </ul>
-                </nav>
-            {% endif %}
-        {% else %}
-            <p>Nenhum resultado encontrado.</p>
-        {% endif %}
-    {% endif %}
-{% endblock %}
+						{% set queryString = nextPageParams | url_encode %}
+						<a class="page-link {% if not results.meta.next %}disabled{% endif %}" href="{{ url("app_client_search") }}?{{ queryString }}">Próxima</a>
+					</li>
+				</ul>
+			</nav>
+		{% endif %}
+	{% else %}
+		<p>Nenhum resultado encontrado.</p>
+	{% endif %}
+{% endif %}{% endblock %}

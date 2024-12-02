@@ -1,0 +1,15 @@
+.data-list {
+    font-size: 24px;
+}
+
+.title {
+    font-weight: bold;
+}
+
+.log {
+    font-family: monospace;
+}
+
+tr.log-error td {
+    color: red;
+}

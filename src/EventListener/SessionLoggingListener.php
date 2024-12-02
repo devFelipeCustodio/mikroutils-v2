@@ -2,7 +2,7 @@
 
 namespace App\EventListener;
 
-use App\Entity\Session;
+use App\Entity\UserSession;
 use App\Entity\User;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,11 +18,11 @@ class SessionLoggingListener
 
     public function __invoke(LoginSuccessEvent $event): void
     {
-        $session = new Session();
-        /** @var User $user */
+        $session = new UserSession();
         $user = $event->getUser();
         $session->setUserId($user->getId());
         $request = $event->getRequest();
+        $session->setSessionId($request->getSession()->getId());
         $session->setUserAgent($request->headers->get("User-Agent"));
         $session->setCreatedAt(new DateTimeImmutable());
         $session->setIp($request->getClientIp());

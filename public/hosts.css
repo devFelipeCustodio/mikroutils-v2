@@ -1,8 +1,0 @@
-#hosts {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-#hosts .form-switch {
-  flex-basis: 50%;
-}

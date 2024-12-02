@@ -1,6 +1,7 @@
 <?php
 
 namespace App;
+use Exception;
 
 final class Utilities
 {
@@ -34,5 +35,13 @@ final class Utilities
     private static function isMAC(string $q)
     {
         return preg_match("/([a-fA-F]*\d*(\:|\-)){2}/", $q) === 1;
+    }
+
+    public static function formatGatewayError(array $error)
+    {
+        if (isset($error["hostname"]) && isset($error["message"]))
+            return $error["hostname"] . ": " . $error["message"];
+
+        throw new Exception("Entrada inválida.");
     }
 }

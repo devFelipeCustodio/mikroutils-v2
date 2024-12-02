@@ -6,10 +6,12 @@ use App\Entity\ClientExport;
 use App\Entity\User;
 use App\Form\Type\ExportUsersFormType;
 use App\GatewayService;
+use App\Utilities;
 use App\ZabbixAPIClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,7 +23,7 @@ class ExportController extends AbstractController
         Request $request,
         FormFactoryInterface $formFactory,
         ZabbixAPIClient $zabbix,
-        EntityManagerInterface $entityManager,
+        EntityManagerInterface $entityManager
     ): ?Response {
         $user = $this->getUser();
         assert($user instanceof User);
@@ -29,6 +31,7 @@ class ExportController extends AbstractController
         $params = ['hostids' => $allowedHosts, 'output' => ['host'], 'selectInterfaces' => ['ip']];
         $zabbixHosts = $zabbix->fetchHosts($params)['result'];
         $hostTable = [];
+        $errors = [];
 
         foreach ($zabbixHosts as $h) {
             $hostTable[$h['host']] = $h['hostid'];
@@ -61,30 +64,39 @@ class ExportController extends AbstractController
             });
             $gwService = new GatewayService($filteredHosts);
             $results = $gwService->getUsers();
+            $errors = $gwService->getErrors();
             $csv = '';
             foreach ($results['data'] as $gw) {
                 foreach ($gw['data'] as $username) {
-                    $csv .= str_replace(',', "\,", $gw['meta']['hostname']).','.
-                        str_replace(',', "\,", $username['name']).','.
-                        str_replace(',', "\,", $username['caller-id'])."\n";
+                    $csv .= str_replace(',', "\,", $gw['meta']['hostname']) . ',' .
+                        str_replace(',', "\,", $username['name']) . ',' .
+                        str_replace(',', "\,", $username['caller-id']) . "\n";
                 }
             }
-            $response = new Response();
-            $response->setContent($csv);
-            $response->setStatusCode(200);
-            $response->headers->set('Content-Type', 'text/csv');
+            $request->getSession()->set("ppp_user_list", $csv);
 
             $export->setUser($user);
             $export->setCreatedAt(new \DateTimeImmutable());
 
             $entityManager->persist($export);
             $entityManager->flush();
-
-            return $response->send();
         }
 
         return $this->render('export/users.html.twig', [
             'form' => $form,
+            'errors' => $errors
         ]);
+    }
+
+    #[Route('/export/ppp_users/download', name: 'app_export_ppp_users_download', methods: 'GET')]
+
+    public function download(Request $request)
+    {
+        $csv = $request->getSession()->get("ppp_user_list");
+        $response = new Response();
+        $response->setContent($csv);
+        $response->headers->set('Content-Type', 'text/csv');
+        $request->getSession()->remove("ppp_user_list");
+        $response->send();
     }
 }

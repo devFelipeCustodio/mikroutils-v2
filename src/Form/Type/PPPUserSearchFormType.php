@@ -43,7 +43,7 @@ class PPPUserSearchFormType extends AbstractType
                 'choices' => $hosts,
                 'choice_attr' => function ($choice, string $key) {
                     if ('Todos' === $key) {
-                        return ['checked' => 'checked', 'disabled' => false, 'data-choice-all' => null];
+                        return ['checked' => 'checked', 'disabled' => false, 'data-choice-all' => null, 'required' => false];
                     }
 
                     return [];

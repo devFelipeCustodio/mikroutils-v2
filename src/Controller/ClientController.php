@@ -11,12 +11,14 @@ use App\Utilities;
 use App\ZabbixAPIClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ClientController extends AbstractController
@@ -73,7 +75,7 @@ class ClientController extends AbstractController
             $search->setUser($user);
             $search->setHosts(
                 array_values(
-                    array_map(fn ($h) => $h['hostid'], $zabbixHosts)
+                    array_map(fn($h) => $h['hostid'], $zabbixHosts)
                 )
             );
             $search->setCreatedAt(new \DateTimeImmutable());
@@ -96,10 +98,11 @@ class ClientController extends AbstractController
     public function detail(
         ZabbixAPIClient $zabbix,
         HttpClientInterface $httpClient,
+        Utilities $util,
         string $gw,
         string $name,
     ): NotFoundHttpException|Response|RedirectResponse {
-        $params = ['hostids' => $gw, 'output' => ['host'], 'selectInterfaces' => ['ip']];
+        $params = ['hostids' => [$gw], 'output' => ['host'], 'selectInterfaces' => ['ip']];
         $result = $zabbix->fetchHosts($params)['result'];
         if (empty($result)) {
             return $this->createNotFoundException();
@@ -107,25 +110,41 @@ class ClientController extends AbstractController
         $gw = new GatewayService($result);
         $errors = $gw->getErrors();
         if (!empty($errors)) {
-            $this->addFlash('danger', $errors[0]['hostname'].': '.$errors[0]['message']
+            $this->addFlash(
+                'danger',
+                $util::formatGatewayError($errors[0])
             );
-
             return $this->redirectToRoute('app_client_search');
         }
-        $user = $gw->getFullUserDataByName($name);
-        $manufacturer = null;
-        try {
-            $apiResponse = $httpClient->
-                request('GET', 'https://www.macvendorlookup.com/api/v2/'.$user['caller-id'])->toArray();
-            $manufacturer = $apiResponse[0]['company'];
-        } catch (\Throwable $th) {
-            $manufacturer = 'N/A';
-        }
+        $data = $gw->getFullUserDataByName($name);
+        $logs = $gw->findLogsWith($name, $data["caller-id"]);
+        $cache = new FilesystemAdapter();
+        $manufacturer = $cache->get("macvendor." . $data["caller-id"], function (ItemInterface $item) use ($data, $httpClient): string {
+            $item->expiresAfter(720);
+            try {
+                $apiResponse = $httpClient->
+                    request('GET', 'https://www.macvendorlookup.com/api/v2/' . $data['caller-id'])->toArray();
+                $manufacturer = $apiResponse[0]['company'];
+            } catch (\Throwable $th) {
+                $manufacturer = 'N/A';
+            }
+            return $manufacturer;
+        });
 
         return $this->render('client/detail/index.html.twig', [
-            'name' => $user['user'],
+            'name' => $data['user'],
             'gw' => $result[0]['host'],
+            'callerId' => $data['caller-id'],
+            'interface' => $data['interface'],
+            'uptime' => $data['uptime'],
+            'localAddress' => $data['local-address'],
+            'remoteAddress' => $data['remote-address'],
+            'maxLimit' => $data['max-limit'],
+            'rxByte' => $util::formatBytes($data['rx-byte']),
+            'txByte' => $util::formatBytes($data['tx-byte']),
+            'lastLinkUpTime' => (new \DateTime($data['last-link-up-time']))->format("d/n/Y à\s H:i:s"),
             'manufacturer' => $manufacturer,
+            'logs' => $logs
         ]);
     }
 }

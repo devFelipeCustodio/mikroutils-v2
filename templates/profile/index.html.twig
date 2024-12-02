@@ -1,24 +1,22 @@
 {% extends 'base.html.twig' %}
+{% block stylesheets %}<link rel="stylesheet" href="{{ asset("assets/form.css") }}"></link>{% endblock %}{% block title %}Perfil de
+{{app.user.username}}{% endblock %}{% block body %}
+<div class="container">
+	<div class="mb-5 border-bottom">
+		<h1 class="mb-3">Seja bem-vindo(a),
+			{{app.user.username}}!</h1>
+	</div>
+	<div class="form-wrapper">
+		<h2 class="mb-4">Alterar senha</h2>
+		{{form_start(form)}}
+		{{form_errors(form)}}
+		{{form_row(form.oldPassword)}}
+		{{form_row(form.newPassword)}}
+		<button type="button" class="px-4 btn btn-primary mb-3 gap-1 d-flex align-items-center justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#filterModal">
+			<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewbox="0 -960 960 960" width="18px" fill="currentColor"><path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"/></svg>
+			Salvar
+		</button>
+		{{form_end(form)}}
+	</div>
 
-{% block title %}Perfil de {{app.user.username}}{% endblock %}
-
-{% block body %}
-    <div class="container">
-        <h1 class="mb-3">Seja bem-vindo(a), {{app.user.username}}!</h1>
-        <hr class="mb-5"/>
-        <h2 class="text-center">Alterar senha</h2>
-        {{form_start(form)}}
-        {{form_errors(form)}}
-        {{form_row(form.oldPassword)}}
-        {{form_row(form.newPassword)}}
-        <button type="button"
-                class="px-4 btn btn-primary mb-3 gap-1 d-flex align-items-center justify-content-center align-items-center"
-                data-bs-toggle="modal"
-                data-bs-target="#filterModal">
-            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" 
-            width="18px" fill="currentColor"><path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"/></svg>
-            Salvar
-        </button>
-        {{form_end(form)}}
-    </div>
-{% endblock %}
+</div>{% endblock %}

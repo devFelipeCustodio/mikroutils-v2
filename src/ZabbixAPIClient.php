@@ -18,7 +18,7 @@ class ZabbixAPIClient
         $this->groupID = $_SERVER["ZABBIX_GW_GROUPID"];
     }
 
-    public function fetchHosts(array $_params = null): array
+    public function fetchHosts(array $_params): array
     {
         $params = ["groupids" => $this->groupID];
 

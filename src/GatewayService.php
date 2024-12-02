@@ -55,7 +55,7 @@ final class GatewayService
         foreach ($this->gateways as $gateway) {
             $hostname = $gateway['hostname'];
             $client = $gateway['client'];
-            $logs = $this->cache->get('gateway.logs.'.$hostname, function (ItemInterface $item) use (&$client, &$query, &$mac): string {
+            $logs = $this->cache->get('gateway.logs.' . $hostname, function (ItemInterface $item) use (&$client, &$query, &$mac): string {
                 $item->expiresAfter(60);
 
                 $logs = $client->findLogsWith($query, $mac);
@@ -65,7 +65,7 @@ final class GatewayService
 
             $logs = unserialize($logs);
             $filtered = array_filter($logs, function ($log) use (&$query) {
-                $regex = preg_match("/$query/i", $log);
+                $regex = preg_match("/$query/i", $log["message"]);
 
                 return 1 === $regex;
             });
@@ -98,7 +98,7 @@ final class GatewayService
             $client = $gateway['client'];
             $id = $gateway['id'];
 
-            $users = $this->cache->get('gateway.users.'.$hostname, function (ItemInterface $item) use (&$client): string {
+            $users = $this->cache->get('gateway.users.' . $hostname, function (ItemInterface $item) use (&$client): string {
                 $item->expiresAfter(60);
 
                 $users = $client->getActivePPPUsers();
@@ -143,7 +143,7 @@ final class GatewayService
 
             $ip = $gateway['ip'];
 
-            $users = $this->cache->get('gateway.users.'.$hostname, function (ItemInterface $item) use (&$client): string {
+            $users = $this->cache->get('gateway.users.' . $hostname, function (ItemInterface $item) use (&$client): string {
                 $item->expiresAfter(60);
                 $users = $client->getActivePPPUsers();
 
