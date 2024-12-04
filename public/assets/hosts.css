@@ -2,3 +2,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
 }
+
+.modal-dialog {
+    max-width: 800px;
+}
