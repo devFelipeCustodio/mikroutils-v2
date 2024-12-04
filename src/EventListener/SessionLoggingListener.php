@@ -3,7 +3,6 @@
 namespace App\EventListener;
 
 use App\Entity\UserSession;
-use App\Entity\User;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
@@ -20,7 +19,7 @@ class SessionLoggingListener
     {
         $session = new UserSession();
         $user = $event->getUser();
-        $session->setUserId($user->getId());
+        $session->setUser($user);
         $request = $event->getRequest();
         $session->setSessionId($request->getSession()->getId());
         $session->setUserAgent($request->headers->get("User-Agent"));
