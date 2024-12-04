@@ -131,6 +131,15 @@ class ClientController extends AbstractController
             return $manufacturer;
         });
 
+        $maxLimitUp = 0;
+        $maxLimitDown = 0;
+        $maxLimit = explode("/", $data['max-limit']);
+        
+        if($maxLimit[0] !== null && $maxLimit[1] !== null){
+            $maxLimitUp = $util::formatBytes($maxLimit[0]);
+            $maxLimitDown = $util::formatBytes($maxLimit[1]);
+        }
+
         return $this->render('client/detail/index.html.twig', [
             'name' => $data['user'],
             'gw' => $result[0]['host'],
@@ -139,10 +148,11 @@ class ClientController extends AbstractController
             'uptime' => $data['uptime'],
             'localAddress' => $data['local-address'],
             'remoteAddress' => $data['remote-address'],
-            'maxLimit' => $data['max-limit'],
+            'maxLimitUp' => $maxLimitUp,
+            'maxLimitDown' => $maxLimitDown,
             'rxByte' => $util::formatBytes($data['rx-byte']),
             'txByte' => $util::formatBytes($data['tx-byte']),
-            'lastLinkUpTime' => (new \DateTime($data['last-link-up-time']))->format("d/n/Y à\s H:i:s"),
+            'lastLinkUpTime' => $data['last-link-up-time'],
             'manufacturer' => $manufacturer,
             'logs' => $logs
         ]);
