@@ -21,7 +21,27 @@
 {% include 'gatewayError.html.twig' %}
 {% if results %}
 	{% if results.meta.length > 0 %}
-		{% else %}
+		<div class="accordion" id="accordionLog">
+		{% set firstBefore = true %}
+		{% for gw in results.data %}
+			<div class="accordion-item">
+				<h2 class="accordion-header">
+				<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded={% if firstBefore %}"true"{% else %}"false"{% endif %} aria-controls="collapseOne">{{ gw.meta.hostname }}
+				</button>
+				</h2>
+				{% for log in gw.data %}
+							<div id="collapseOne" class="accordion-collapse collapse {% if firstBefore %}show{% else %}{% endif %}" data-bs-parent="#accordionExample">
+								<div class="accordion-body">
+									{{ log.message }}
+								</div>
+							</div>
+			</div>
+						{% set first = false %}
+				{% endfor %}
+		{% endfor %}
+		</div>
+	{% else %}
 			<p>Nenhum resultado encontrado.</p>
 	{% endif %}
-{% endif %}{% endblock %}
+{% endif %}
+{% endblock %}
