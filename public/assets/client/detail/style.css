@@ -13,3 +13,8 @@
 tr.log-error td {
     color: red;
 }
+
+#log-tab-pane {
+    overflow-y: scroll;
+    max-height: 600px;
+}
