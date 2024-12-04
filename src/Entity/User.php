@@ -282,7 +282,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->userSessions->contains($userSession)) {
             $this->userSessions->add($userSession);
-            $userSession->setUserId($this);
+            $userSession->setUser($this);
         }
 
         return $this;
@@ -292,8 +292,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->userSessions->removeElement($userSession)) {
             // set the owning side to null (unless already changed)
-            if ($userSession->getUserId() === $this) {
-                $userSession->setUserId(null);
+            if ($userSession->getUser() === $this) {
+                $userSession->setUser(null);
             }
         }
 
