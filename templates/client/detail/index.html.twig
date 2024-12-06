@@ -1,7 +1,12 @@
 {% extends 'base.html.twig' %}
-{% block stylesheets %}<link rel="stylesheet" href="{{ asset("assets/client/detail/style.css") }}"></link>{% endblock %}{% block title %}
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ asset("assets/client/detail/style.css") }}"></link>
+<link rel="stylesheet" href="{{ asset("assets/logTable.css") }}"></link>{% endblock %}
+{% block title %}
 {{ name}}
-:: Mikroutils{% endblock %}{% block body %}
+:: Mikroutils
+{% endblock %}
+{% block body %}
 <div class="mb-5 border-bottom">
 	<h1>{{ name }}</h1>
 </div>
@@ -67,33 +72,34 @@
 		</div>
 	</div>
 	{% if logs.meta.length > 0 %}
-		<div class="mt-3 tab-pane fade" id="log-tab-pane" role="tabpanel" aria-labelledby="log-tab" tabindex="0">
-			<table class="table">
-				<thead>
-					<tr>
-						<th>Time</th>
-						<th>Topics</th>
-						<th>Message</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for host in logs.data %}
-						{% for log in host.data|reverse %}
-							{% if "error" in log.topics %}
-								{% set className = "log log-error" %}
-							{% else %}
-								{% set className = "log" %}
+	<div class="mt-3 tab-pane fade" id="log-tab-pane" role="tabpanel" aria-labelledby="log-tab" tabindex="0">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Time</th>
+					<th>Topics</th>
+					<th>Message</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for host in logs.data %}
+				{% for log in host.data|reverse %}
+					{% if "error" in log.topics %}
+						{% set className = "log log-error" %}
+					{% else %}
+						{% set className = "log" %}
 
-							{% endif %}
-							<tr class="{{ className }}">
-								<td>{{ log.time }}</td>
-								<td>{{ log.topics }}</td>
-								<td>{{ log.message }}</td>
-							</tr>
-						{% endfor %}
-					{% endfor %}
-				</tbody>
+					{% endif %}
+					<tr class="{{ className }}">
+						<td>{{ log.time }}</td>
+						<td>{{ log.topics }}</td>
+						<td>{{ log.message }}</td>
+					</tr>
+				{% endfor %}
+			{% endfor %}
 			</tbody>
 		</table>
 	</div>
-{% endif %}</div>{% endblock %}
+	{% endif %}
+</div>
+{% endblock %}

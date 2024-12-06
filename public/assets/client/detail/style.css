@@ -5,16 +5,3 @@
 .title {
     font-weight: bold;
 }
-
-.log {
-    font-family: monospace;
-}
-
-tr.log-error td {
-    color: red;
-}
-
-#log-tab-pane {
-    overflow-y: scroll;
-    max-height: 600px;
-}
