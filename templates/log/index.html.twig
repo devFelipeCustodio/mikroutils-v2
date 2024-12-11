@@ -33,7 +33,7 @@
 				</button>
 				</h2>
 				<div id="collapse{{ loop.index }}" class="accordion-collapse collapse{% if loop.first %} show{% else %}{% endif %}" data-bs-parent="#accordionExample">
-					<div class="accordion-body">
+					<div id="log-tab-pane" class="accordion-body">
 						<table class="table">
 							<thead>
 								<tr>
@@ -43,7 +43,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								{% for log in host.data|reverse %}
+								{% for log in host.data %}
 									{% if "error" in log.topics %}
 										{% set className = "log log-error" %}
 									{% else %}
