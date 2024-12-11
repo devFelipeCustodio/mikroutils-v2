@@ -7,6 +7,6 @@ tr.log-error td {
 }
 
 #log-tab-pane {
-    overflow-y: scroll;
+    overflow-y: auto;
     max-height: 600px;
 }
