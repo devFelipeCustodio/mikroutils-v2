@@ -4,7 +4,6 @@ namespace App;
 
 class ClientSearchPaginator
 {
-    private $total = 0;
     private int $itemsPerPage;
     private array $results;
     private int $page;
@@ -39,18 +38,28 @@ class ClientSearchPaginator
     {
         $start = ($this->page - 1) * $this->itemsPerPage;
         $data = $this->results["data"];
+        $this->output["meta"]["length"] = 0;
+        $current = 0;
+        $currentHost = 0;
+        $count = 0;
         foreach ($data as $arr) {
-            $offset = 0;
-            if (count($data) === 1 && $start !== 0)
-                $offset = $start;
-            $remaining = $this->itemsPerPage - $this->total;
-            array_push($this->output["data"], [
-                "data" => array_slice($arr["data"], $offset, $remaining),
-                "meta" => $arr["meta"]
-            ]);
-            $this->total += count($arr["data"]);
+            foreach ($arr["data"] as $result){
+                if($current < $start){
+                    $current++;
+                    continue;
+                } else if ($count >= $this->itemsPerPage){
+                    break;
+                } else {
+                    if(!isset($this->output["data"][$currentHost]["data"]))
+                        $this->output["data"][$currentHost]["data"] = [];
+                    array_push($this->output["data"][$currentHost]["data"], $result);
+                    $this->output["data"][$currentHost]["meta"] = $arr["meta"];
+                    $count++;
+                }
+                $current++;
+            }
+            $currentHost++;
         }
-
         $this->output["meta"]["length"] = $this->results["meta"]["length"];
         return $this->output;
     }
