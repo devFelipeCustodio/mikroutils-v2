@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\ClientSearchPaginator;
+use App\Entity\ClientDetail;
 use App\Entity\ClientSearch;
 use App\Entity\User;
 use App\Form\Type\PPPUserSearchFormType;
@@ -99,6 +100,7 @@ class ClientController extends AbstractController
         ZabbixAPIClient $zabbix,
         HttpClientInterface $httpClient,
         Utilities $util,
+        EntityManagerInterface $entityManager,
         string $gw,
         string $name,
     ): NotFoundHttpException|Response|RedirectResponse {
@@ -107,8 +109,8 @@ class ClientController extends AbstractController
         if (empty($result)) {
             return $this->createNotFoundException();
         }
-        $gw = new GatewayService($result);
-        $errors = $gw->getErrors();
+        $host = new GatewayService($result);
+        $errors = $host->getErrors();
         if (!empty($errors)) {
             $this->addFlash(
                 'danger',
@@ -116,8 +118,8 @@ class ClientController extends AbstractController
             );
             return $this->redirectToRoute('app_client_search');
         }
-        $data = $gw->getFullUserDataByName($name);
-        $logs = $gw->findLogsWith($name, $data["caller-id"]);
+        $data = $host->getFullUserDataByName($name);
+        $logs = $host->findLogsWith($name, $data["caller-id"]);
         $cache = new FilesystemAdapter();
         $manufacturer = $cache->get("macvendor." . $data["caller-id"], function (ItemInterface $item) use ($data, $httpClient): string {
             $item->expiresAfter(720);
@@ -139,6 +141,16 @@ class ClientController extends AbstractController
             $maxLimitUp = $util::formatBytes($maxLimit[0]);
             $maxLimitDown = $util::formatBytes($maxLimit[1]);
         }
+
+        $clientDetail = new ClientDetail();
+        $clientDetail
+            ->setUserId($this->getUser())
+            ->setHost($gw)
+            ->setCreatedAt(new \DateTimeImmutable())
+            ->setClientName($name);
+
+        $entityManager->persist($clientDetail);
+        $entityManager->flush();
 
         return $this->render('client/detail/index.html.twig', [
             'name' => $data['user'],
