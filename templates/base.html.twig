@@ -25,14 +25,14 @@
 					{% if app.user %}
 						<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 							<li class="nav-item">
-								<a class="gap-1 d-flex align-items-center nav-link{% if app.request.pathinfo == " /client" %} active" aria-current="page" {% else %} "{% endif %} href=" /client">
+								<a class="gap-1 d-flex align-items-center nav-link{% if app.request.pathinfo == " /client" %} active" aria-current="page" {% else %} "{% endif %} href="/client">
 									<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewbox="0 -960 960 960" width="24px" fill="currentColor">
 										<path d="M440-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47Zm0-80q33 0 56.5-23.5T520-640q0-33-23.5-56.5T440-720q-33 0-56.5 23.5T360-640q0 33 23.5 56.5T440-560ZM884-20 756-148q-21 12-45 20t-51 8q-75 0-127.5-52.5T480-300q0-75 52.5-127.5T660-480q75 0 127.5 52.5T840-300q0 27-8 51t-20 45L940-76l-56 56ZM660-200q42 0 71-29t29-71q0-42-29-71t-71-29q-42 0-71 29t-29 71q0 42 29 71t71 29Zm-540 40v-111q0-34 17-63t47-44q51-26 115-44t142-18q-12 18-20.5 38.5T407-359q-60 5-107 20.5T221-306q-10 5-15.5 14.5T200-271v31h207q5 22 13.5 42t20.5 38H120Zm320-480Zm-33 400Z"/>
 									</svg>
 									Clientes</a>
 							</li>
 							<li class="nav-item">
-								<a class="gap-1 d-flex align-items-center nav-link{% if app.request.pathinfo == " /logs" %} active" aria-current="page" {% else %} "{% endif %} href=" /logs">
+								<a class="gap-1 d-flex align-items-center nav-link{% if app.request.pathinfo == " /logs" %} active" aria-current="page" {% else %} "{% endif %} href="/logs">
 									<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewbox="0 -960 960 960" width="24px" fill="currentColor">
 										<path d="M458-280q18 0 35.5-4.5T526-298l98 98 56-56-98-98q9-15 13.5-32.5T600-422q0-58-41-98t-99-40q-58 0-99 41t-41 99q0 58 40 99t98 41Zm2-80q-25 0-42.5-17.5T400-420q0-25 17.5-42.5T460-480q25 0 42.5 17.5T520-420q0 25-17.5 42.5T460-360ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
 									</svg>
@@ -48,7 +48,7 @@
 									</button>
 									<ul class="dropdown-menu">
 										<li>
-											<a class="dropdown-item {% if app.request.pathinfo == " /export/ppp_users" %}active" aria-current="true" {% else %} "{% endif %} href=" /export/ppp_users">Clientes</a>
+											<a class="dropdown-item {% if app.request.pathinfo == " /export/ppp_users" %}active" aria-current="true" {% else %} "{% endif %} href="/export/ppp_users">Clientes</a>
 										</li>
 									</ul>
 								</li>
@@ -57,13 +57,13 @@
 						<ul class="navbar-nav mb-2 mb-lg-0">
 							{% if app.user and "ROLE_ADMIN" in app.user.roles %}
 								<li class="nav-item">
-									<a class="gap-1 d-flex align-items-center nav-link{% if app.request.pathinfo == " /profile" %} active" aria-current="page" {% else %} "{% endif %} href=" /admin">
+									<a class="gap-1 d-flex align-items-center nav-link{% if app.request.pathinfo == " /profile" %} active" aria-current="page" {% else %} "{% endif %} href="/admin">
 										<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewbox="0 -960 960 960" width="24px" fill="currentColor"><path d="M680-280q25 0 42.5-17.5T740-340q0-25-17.5-42.5T680-400q-25 0-42.5 17.5T620-340q0 25 17.5 42.5T680-280Zm0 120q31 0 57-14.5t42-38.5q-22-13-47-20t-52-7q-27 0-52 7t-47 20q16 24 42 38.5t57 14.5ZM480-80q-139-35-229.5-159.5T160-516v-244l320-120 320 120v227q-19-8-39-14.5t-41-9.5v-147l-240-90-240 90v188q0 47 12.5 94t35 89.5Q310-290 342-254t71 60q11 32 29 61t41 52q-1 0-1.5.5t-1.5.5Zm200 0q-83 0-141.5-58.5T480-280q0-83 58.5-141.5T680-480q83 0 141.5 58.5T880-280q0 83-58.5 141.5T680-80ZM480-494Z"/></svg>
 										Administração</a>
 								</li>
 							{% endif %}
 							<li class="nav-item">
-								<a class="gap-1 d-flex align-items-center nav-link{% if app.request.pathinfo == " /profile" %} active" aria-current="page" {% else %} "{% endif %} href=" /profile">
+								<a class="gap-1 d-flex align-items-center nav-link{% if app.request.pathinfo == " /profile" %} active" aria-current="page" {% else %} "{% endif %} href="/profile">
 									<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewbox="0 -960 960 960" width="24px" fill="currentColor">
 										<path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z"/>
 									</svg>
