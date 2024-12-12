@@ -39,7 +39,7 @@ class AuthenticationController extends AbstractController
         $hashedPassword = $passwordHasher->hashPassword($user, "root");
         $user->setPassword($hashedPassword);
         $user->setCreatedAt(new DateTimeImmutable());
-        $user->setRoles(["ROLE_ADMIN"]);
+        $user->setRoles(["ROLE_USER", "ROLE_ADMIN"]);
         $hostsSetter->all($user);
 
         $entityManager->persist($user);
