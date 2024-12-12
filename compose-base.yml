@@ -5,4 +5,5 @@ services:
       dockerfile: Dockerfile
     environment:
       DOCUMENT_ROOT: "/public"
+      PHP_DATE_TIMEZONE: "America/Sao_Paulo"
 
