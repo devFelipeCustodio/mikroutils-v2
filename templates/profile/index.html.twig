@@ -1,5 +1,7 @@
 {% extends 'base.html.twig' %}
-{% block stylesheets %}<link rel="stylesheet" href="{{ asset("assets/form.css") }}"></link>{% endblock %}{% block title %}Perfil de
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ asset("assets/form.css") }}">
+</link>{% endblock %}{% block title %}Perfil de
 {{app.user.username}}{% endblock %}{% block body %}
 <div class="container">
 	<div class="mb-5 border-bottom">
@@ -12,10 +14,24 @@
 		{{form_errors(form)}}
 		{{form_row(form.oldPassword)}}
 		{{form_row(form.newPassword)}}
-		<button type="button" class="px-4 btn btn-primary mb-3 gap-1 d-flex align-items-center justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#filterModal">
-			<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewbox="0 -960 960 960" width="18px" fill="currentColor"><path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"/></svg>
+		<button type="button"
+			class="px-4 btn btn-primary mb-3 gap-1 d-inline-flex align-items-center justify-content-center align-items-center"
+			data-bs-toggle="modal" data-bs-target="#filterModal">
+			<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewbox="0 -960 960 960" width="18px"
+				fill="currentColor">
+				<path
+					d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z" />
+			</svg>
 			Salvar
 		</button>
+		<a href="/logout"
+			class="px-4 btn btn-primary ms-3 mb-3 gap-1 d-inline-flex align-items-center justify-content-center align-items-center">
+			<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+				<path
+					d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z" />
+			</svg>
+			Sair
+		</a>
 		{{form_end(form)}}
 	</div>
 
