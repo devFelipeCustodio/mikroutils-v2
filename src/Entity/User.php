@@ -26,7 +26,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var list<string> The user roles
      */
-    #[ORM\Column]
+    #[ORM\Column(type: Types::SIMPLE_ARRAY)]
     private array $roles = [];
 
     /**
@@ -65,12 +65,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: UserSession::class, mappedBy: 'user_id')]
     private Collection $userSessions;
 
+    /**
+     * @var Collection<int, ClientDetail>
+     */
+    #[ORM\OneToMany(targetEntity: ClientDetail::class, mappedBy: 'user_id')]
+    private Collection $clientDetails;
+
     public function __construct()
     {
         $this->clientSearches = new ArrayCollection();
         $this->logSearches = new ArrayCollection();
         $this->clientExports = new ArrayCollection();
         $this->userSessions = new ArrayCollection();
+        $this->clientDetails = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -107,11 +114,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
+        return $this->roles;
     }
 
     /**
@@ -294,6 +297,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($userSession->getUser() === $this) {
                 $userSession->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ClientDetail>
+     */
+    public function getClientDetails(): Collection
+    {
+        return $this->clientDetails;
+    }
+
+    public function addClientDetail(ClientDetail $clientDetail): static
+    {
+        if (!$this->clientDetails->contains($clientDetail)) {
+            $this->clientDetails->add($clientDetail);
+            $clientDetail->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeClientDetail(ClientDetail $clientDetail): static
+    {
+        if ($this->clientDetails->removeElement($clientDetail)) {
+            // set the owning side to null (unless already changed)
+            if ($clientDetail->getUserId() === $this) {
+                $clientDetail->setUserId(null);
             }
         }
 
