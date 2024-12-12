@@ -21,7 +21,7 @@ class SessionLoggingListener
         $user = $event->getUser();
         $session->setUser($user);
         $request = $event->getRequest();
-        $session->setSessionId($request->getSession()->getId());
+        $session->setSession($request->getSession()->getId());
         $session->setUserAgent($request->headers->get("User-Agent"));
         $session->setCreatedAt(new DateTimeImmutable());
         $session->setIp($request->getClientIp());

@@ -23,7 +23,7 @@ class UserSession
     private ?string $ip = null;
 
     #[ORM\Column]
-    private ?string $session_id = null;
+    private ?string $session = null;
 
     #[ORM\ManyToOne(inversedBy: 'userSessions')]
     #[ORM\JoinColumn(nullable: false)]
@@ -71,14 +71,14 @@ class UserSession
         return $this;
     }
 
-    public function getSessionId(): ?int
+    public function getSession(): ?string
     {
-        return $this->session_id;
+        return $this->session;
     }
 
-    public function setSessionId(string $session_id): static
+    public function setSession(string $session): static
     {
-        $this->session_id = $session_id;
+        $this->session = $session;
 
         return $this;
     }
