@@ -28,6 +28,14 @@ services:
           event: Symfony\Component\Security\Http\Event\LoginSuccessEvent,
         }
 
+
+  App\EventListener\SessionDeletedListener:
+    tags:
+      - {
+          name: kernel.event_listener,
+          event: EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityDeletedEvent,
+        }
+
   Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
     arguments:
       - "%env(DATABASE_URL)%"

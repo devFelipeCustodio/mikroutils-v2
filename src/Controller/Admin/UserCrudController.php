@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\User;
 use App\ZabbixAPIClient;
+use DateTimeImmutable;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -13,16 +14,33 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserCrudController extends AbstractCrudController
 {
-    public function __construct(private ZabbixAPIClient $zabbix)
+    public function __construct(private ZabbixAPIClient $zabbix, public UserPasswordHasherInterface $userPasswordHasher
+    )
     {
         
     }
     public static function getEntityFqcn(): string
     {
         return User::class;
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+        ->setPageTitle('index', 'Usuários')
+        ->setPageTitle('new', 'Novo usuário')
+        ->setPageTitle('detail', fn (User $user) => (string) $user->getUsername())
+        ->setPageTitle('edit', fn (User $user) => sprintf('Editando <b>%s</b>', $user->getUsername()))
+        ->setDateTimeFormat('dd/MM/yyyy, kk:mm');
     }
 
     public function configureFields(string $pageName): iterable
@@ -49,9 +67,9 @@ class UserCrudController extends AbstractCrudController
             foreach($this->zabbix->fetchHosts($params)["result"] as $i){
                 $hostsMap[$i["hostid"]] = $i["host"];
             };
-            return [
+            $fields =  [
                 TextField::new('username')->setLabel("Nome"),
-                TextField::new('password')->onlyOnForms(),
+                TextField::new('password')->onlyWhenCreating(),
                 ChoiceField::new('roles')->setLabel("Funções")
                     ->allowMultipleChoices()
                     ->setChoices(array_flip($rolesMap))
@@ -62,9 +80,6 @@ class UserCrudController extends AbstractCrudController
                             return null;
                         }, $arr));
                     }),
-                DateTimeField::new('created_at')->setLabel("Data de criação")
-                    ->onlyOnDetail()
-                    ->onlyOnIndex(),
                 ChoiceField::new('allowed_host_ids')->setLabel("Hosts")
                     ->allowMultipleChoices()
                     ->setChoices(array_merge(["Todos" => implode(",", array_flip($hostsMap))], array_flip($hostsMap)))
@@ -74,15 +89,57 @@ class UserCrudController extends AbstractCrudController
                         }, $arr));
                     })
             ];
+
+            if(Crud::PAGE_DETAIL === $pageName){
+                array_push($fields, DateTimeField::new('created_at')->setLabel("Data de criação"));
+            }
+
+            return $fields;
         }
     }
 
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->add(Crud::PAGE_EDIT, Action::EDIT);
+            ->add(Crud::PAGE_INDEX, Action::DETAIL);
     }
 
-    
+    public function createNewFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilder
+    {
+        $formBuilder = parent::createNewFormBuilder($entityDto, $formOptions, $context);
+        $user = $entityDto->getInstance();
+        assert($user instanceof User);
+        $user->setCreatedAt(new DateTimeImmutable());
+        return $this->addPasswordEventListener($formBuilder);
+    }
+
+    public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilder
+    {
+        $formBuilder = parent::createEditFormBuilder($entityDto, $formOptions, $context);
+        return $this->addPasswordEventListener($formBuilder);
+    }
+
+    private function addPasswordEventListener(FormBuilder $formBuilder): FormBuilder
+    {
+        return $formBuilder->addEventListener(FormEvents::POST_SUBMIT, $this->hashPassword());
+    }
+
+    private function hashPassword() {
+        return function($event) {
+            $form = $event->getForm();
+            if (!$form->isValid()) {
+                return;
+            }
+            $password = $form->get('password')->getData();
+            if ($password === null) {
+                return;
+            }
+            $user = $this->getUser();
+            assert($user instanceof User);
+            $hash = $this->userPasswordHasher->hashPassword($user, $password);
+            $form->getData()->setPassword($hash);
+        };
+    }
+
+
 }
