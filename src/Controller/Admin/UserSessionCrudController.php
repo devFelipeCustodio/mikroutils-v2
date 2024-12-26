@@ -4,7 +4,6 @@ namespace App\Controller\Admin;
 
 use App\Entity\User;
 use App\Entity\UserSession;
-use Doctrine\DBAL\Query\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -23,10 +22,10 @@ class UserSessionCrudController extends AbstractCrudController
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-        ->setPageTitle('index', 'Sessões')
-        ->setPageTitle('detail', fn (UserSession $session) => (string) $session->getSession())
-        ->setPageTitle('edit', fn (UserSession $session) => sprintf('Editando <b>%s</b>', $session->getSession()))
-        ->setDateTimeFormat('dd/MM/yyyy, kk:mm');
+            ->setPageTitle('index', 'Sessões')
+            ->setPageTitle('detail', fn(UserSession $session) => (string) $session->getSession())
+            ->setPageTitle('edit', fn(UserSession $session) => sprintf('Editando <b>%s</b>', $session->getSession()))
+            ->setDateTimeFormat('dd/MM/yyyy, kk:mm');
     }
 
     public function configureActions(Actions $actions): Actions
@@ -40,11 +39,11 @@ class UserSessionCrudController extends AbstractCrudController
     {
         return [
             AssociationField::new('user')
-                ->formatValue(fn (User $user) => $user->getUsername())
+                ->formatValue(fn(User $user) => $user->getUsername())
                 ->setLabel("Usuário"),
             TextField::new('ip')->setLabel("IP"),
             TextField::new('user_agent')->setLabel("Agente de usuário"),
-            DateTimeField::new('created_at')->setLabel("Data de criação"),
+            DateTimeField::new('created_at')->setLabel("Data da criação"),
         ];
     }
 }

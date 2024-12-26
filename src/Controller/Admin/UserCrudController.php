@@ -23,11 +23,10 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserCrudController extends AbstractCrudController
 {
-    public function __construct(private ZabbixAPIClient $zabbix, public UserPasswordHasherInterface $userPasswordHasher
-    )
-    {
-        
-    }
+    public function __construct(
+        private ZabbixAPIClient $zabbix,
+        public UserPasswordHasherInterface $userPasswordHasher
+    ) {}
     public static function getEntityFqcn(): string
     {
         return User::class;
@@ -36,35 +35,35 @@ class UserCrudController extends AbstractCrudController
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-        ->setPageTitle('index', 'Usuários')
-        ->setPageTitle('new', 'Novo usuário')
-        ->setPageTitle('detail', fn (User $user) => (string) $user->getUsername())
-        ->setPageTitle('edit', fn (User $user) => sprintf('Editando <b>%s</b>', $user->getUsername()))
-        ->setDateTimeFormat('dd/MM/yyyy, kk:mm');
+            ->setPageTitle('index', 'Usuários')
+            ->setPageTitle('new', 'Novo usuário')
+            ->setPageTitle('detail', fn(User $user) => (string) $user->getUsername())
+            ->setPageTitle('edit', fn(User $user) => sprintf('Editando <b>%s</b>', $user->getUsername()))
+            ->setDateTimeFormat('dd/MM/yyyy, kk:mm');
     }
 
     public function configureFields(string $pageName): iterable
     {
         $rolesMap = ["ROLE_USER" => "Usuário", "ROLE_ADMIN" => "Administrador"];
-        if (Crud::PAGE_INDEX === $pageName){
+        if (Crud::PAGE_INDEX === $pageName) {
             return [
                 IdField::new('id'),
                 TextField::new('username')->setLabel("Nome"),
                 ArrayField::new('roles')->setLabel("Funções")
                     ->formatValue(function ($arr) use ($rolesMap) {
                         return implode(", ", array_map(function ($i) use ($rolesMap) {
-                            if(isset($rolesMap[$i]))
-                                 return $rolesMap[$i];
+                            if (isset($rolesMap[$i]))
+                                return $rolesMap[$i];
                             return null;
                         }, $arr));
                     }),
-                DateTimeField::new('created_at')->setLabel("Data de criação"),
-                
+                DateTimeField::new('created_at')->setLabel("Data da criação"),
+
             ];
         } else {
             $params = ['output' => ['host'], 'selectInterfaces' => ['ip']];
             $hostsMap = [];
-            foreach($this->zabbix->fetchHosts($params)["result"] as $i){
+            foreach ($this->zabbix->fetchHosts($params)["result"] as $i) {
                 $hostsMap[$i["hostid"]] = $i["host"];
             };
             $fields =  [
@@ -75,8 +74,8 @@ class UserCrudController extends AbstractCrudController
                     ->setChoices(array_flip($rolesMap))
                     ->formatValue(function ($arr) use ($rolesMap) {
                         return implode(", ", array_map(function ($i) use ($rolesMap) {
-                            if(isset($rolesMap[$i]))
-                                 return $rolesMap[$i];
+                            if (isset($rolesMap[$i]))
+                                return $rolesMap[$i];
                             return null;
                         }, $arr));
                     }),
@@ -90,8 +89,8 @@ class UserCrudController extends AbstractCrudController
                     })
             ];
 
-            if(Crud::PAGE_DETAIL === $pageName){
-                array_push($fields, DateTimeField::new('created_at')->setLabel("Data de criação"));
+            if (Crud::PAGE_DETAIL === $pageName) {
+                array_push($fields, DateTimeField::new('created_at')->setLabel("Data da criação"));
             }
 
             return $fields;
@@ -124,8 +123,9 @@ class UserCrudController extends AbstractCrudController
         return $formBuilder->addEventListener(FormEvents::POST_SUBMIT, $this->hashPassword());
     }
 
-    private function hashPassword() {
-        return function($event) {
+    private function hashPassword()
+    {
+        return function ($event) {
             $form = $event->getForm();
             if (!$form->isValid()) {
                 return;
@@ -140,6 +140,4 @@ class UserCrudController extends AbstractCrudController
             $form->getData()->setPassword($hash);
         };
     }
-
-
 }

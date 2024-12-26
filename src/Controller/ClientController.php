@@ -144,7 +144,7 @@ class ClientController extends AbstractController
 
         $clientDetail = new ClientDetail();
         $clientDetail
-            ->setUserId($this->getUser())
+            ->setUser($this->getUser())
             ->setHost($gw)
             ->setCreatedAt(new \DateTimeImmutable())
             ->setClientName($name);

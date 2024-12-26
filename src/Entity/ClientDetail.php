@@ -15,7 +15,7 @@ class ClientDetail
 
     #[ORM\ManyToOne(inversedBy: 'clientDetails')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user_id = null;
+    private ?User $user = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
@@ -31,14 +31,14 @@ class ClientDetail
         return $this->id;
     }
 
-    public function getUserId(): ?User
+    public function getUser(): ?User
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(?User $user_id): static
+    public function setUser(?User $user): static
     {
-        $this->user_id = $user_id;
+        $this->user = $user;
 
         return $this;
     }

@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20241212203752 extends AbstractMigration
+final class Version20241226193303 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -26,8 +26,8 @@ final class Version20241212203752 extends AbstractMigration
         $this->addSql('CREATE SEQUENCE log_search_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE SEQUENCE "user_id_seq" INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE SEQUENCE user_session_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
-        $this->addSql('CREATE TABLE client_detail (id INT NOT NULL, user_id_id INT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, host INT NOT NULL, client_name VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
-        $this->addSql('CREATE INDEX IDX_7BA034209D86650F ON client_detail (user_id_id)');
+        $this->addSql('CREATE TABLE client_detail (id INT NOT NULL, user_id INT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, host INT NOT NULL, client_name VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE INDEX IDX_7BA03420A76ED395 ON client_detail (user_id)');
         $this->addSql('COMMENT ON COLUMN client_detail.created_at IS \'(DC2Type:datetime_immutable)\'');
         $this->addSql('CREATE TABLE client_export (id INT NOT NULL, user_id INT DEFAULT NULL, hosts TEXT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_172A5D27A76ED395 ON client_export (user_id)');
@@ -51,7 +51,7 @@ final class Version20241212203752 extends AbstractMigration
         $this->addSql('COMMENT ON COLUMN user_session.created_at IS \'(DC2Type:datetime_immutable)\'');
         $this->addSql('CREATE TABLE sessions (sess_id VARCHAR(128) NOT NULL, sess_data BYTEA NOT NULL, sess_lifetime INT NOT NULL, sess_time INT NOT NULL, PRIMARY KEY(sess_id))');
         $this->addSql('CREATE INDEX sess_lifetime_idx ON sessions (sess_lifetime)');
-        $this->addSql('ALTER TABLE client_detail ADD CONSTRAINT FK_7BA034209D86650F FOREIGN KEY (user_id_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE client_detail ADD CONSTRAINT FK_7BA03420A76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE client_export ADD CONSTRAINT FK_172A5D27A76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE client_search ADD CONSTRAINT FK_E1569014A76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE log_search ADD CONSTRAINT FK_A10A8805A76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
@@ -68,7 +68,7 @@ final class Version20241212203752 extends AbstractMigration
         $this->addSql('DROP SEQUENCE log_search_id_seq CASCADE');
         $this->addSql('DROP SEQUENCE "user_id_seq" CASCADE');
         $this->addSql('DROP SEQUENCE user_session_id_seq CASCADE');
-        $this->addSql('ALTER TABLE client_detail DROP CONSTRAINT FK_7BA034209D86650F');
+        $this->addSql('ALTER TABLE client_detail DROP CONSTRAINT FK_7BA03420A76ED395');
         $this->addSql('ALTER TABLE client_export DROP CONSTRAINT FK_172A5D27A76ED395');
         $this->addSql('ALTER TABLE client_search DROP CONSTRAINT FK_E1569014A76ED395');
         $this->addSql('ALTER TABLE log_search DROP CONSTRAINT FK_A10A8805A76ED395');
