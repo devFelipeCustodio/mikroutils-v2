@@ -21,7 +21,6 @@ services:
     extends:
       file: compose-base.yml
       service: app
-
   database:
     image: postgres:16-alpine
     ports:
@@ -29,6 +28,5 @@ services:
     env_file: .env.dev
     volumes:
       - database_data:/var/lib/postgresql/data:rw
-
 volumes:
   database_data:
