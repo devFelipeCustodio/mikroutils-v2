@@ -13,7 +13,6 @@ services:
     image: postgres:16-alpine
     ports:
       - "5442"
-    env_file: .env.prod.local
     volumes:
       - database_data:/var/lib/postgresql/data:rw
 
