@@ -4,6 +4,13 @@ services:
       target: production
     ports:
       - "3535:80"
+    volumes:
+      - ./:/var/www/html/
+    environment:
+      APP_UID: "1000"
+      APP_GID: "1000"
+    extra_hosts:
+      - host.docker.internal:host-gateway
     extends:
       file: compose-base.yml
       service: app
@@ -15,7 +22,6 @@ services:
       - "5442"
     volumes:
       - database_data:/var/lib/postgresql/data:rw
-
 volumes:
   database_data:
 
