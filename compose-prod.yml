@@ -9,6 +9,7 @@ services:
     environment:
       APP_UID: "1000"
       APP_GID: "1000"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database/${POSTGRES_DB}?serverVersion=16&charset=utf8"
     extra_hosts:
       - host.docker.internal:host-gateway
     extends:
@@ -20,9 +21,7 @@ services:
   database:
     image: postgres:16-alpine
     environment: 
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database/${POSTGRES_DB}?serverVersion=16&charset=utf8"
- 
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}" 
     ports:
       - "5432"
     networks:
