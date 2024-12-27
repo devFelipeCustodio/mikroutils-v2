@@ -16,6 +16,7 @@ services:
       service: app
     networks:
       - dokploy-network
+      
   database:
     image: postgres:16-alpine
     environment: 
