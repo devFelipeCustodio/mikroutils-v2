@@ -28,7 +28,6 @@ services:
       - database_data:/var/lib/postgresql/data:rw
 volumes:
   database_data:
-
 networks:
   dokploy-network:
     external: true
