@@ -22,6 +22,8 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}" 
     ports:
       - "5442"
+    networks:
+      - dokploy-network
     volumes:
       - database_data:/var/lib/postgresql/data:rw
 volumes:
