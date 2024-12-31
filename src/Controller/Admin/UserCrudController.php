@@ -68,7 +68,7 @@ class UserCrudController extends AbstractCrudController
             };
             $fields =  [
                 TextField::new('username')->setLabel("Nome"),
-                TextField::new('password')->onlyWhenCreating(),
+                TextField::new('password')->onlyWhenCreating()->setLabel("Senha"),
                 ChoiceField::new('roles')->setLabel("Funções")
                     ->allowMultipleChoices()
                     ->setChoices(array_flip($rolesMap))
