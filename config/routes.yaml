@@ -10,7 +10,6 @@ app_logout:
 
 root:
     path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
     defaults:
-        _controller: FrameworkBundle:Redirect:urlRedirect
-        path: /client
-        permanent: true
+        route: 'app_client_search'
