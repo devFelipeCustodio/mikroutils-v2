@@ -7,9 +7,3 @@ controllers:
 app_logout:
     path: /logout
     methods: GET
-
-root:
-    path: /
-    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
-    defaults:
-        route: 'app_client_search'
