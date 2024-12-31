@@ -7,3 +7,10 @@ controllers:
 app_logout:
     path: /logout
     methods: GET
+
+root:
+    path: /
+    defaults:
+        _controller: FrameworkBundle:Redirect:urlRedirect
+        path: /client
+        permanent: true
