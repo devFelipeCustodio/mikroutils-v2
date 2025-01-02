@@ -15,8 +15,10 @@ class SessionDeletedListener
 
     public function __invoke(BeforeEntityDeletedEvent $event): void
     {
-        $sid = $event->getEntityInstance()->getSession();
-        $this->entityManager->getConnection()
-            ->executeStatement('DELETE FROM public.sessions WHERE sessions.sess_id = :sid', ["sid" => $sid]);
+        try {
+            $sid = $event->getEntityInstance()->getSession();
+            $this->entityManager->getConnection()
+                ->executeStatement('DELETE FROM public.sessions WHERE sessions.sess_id = :sid', ["sid" => $sid]);
+        } catch (\Exception $e){}
     }
 }
