@@ -3,7 +3,7 @@ services:
     build:
       target: production
     ports:
-      - "3535:80"
+      - "80"
     volumes:
       - ./:/var/www/html/
     environment:
