@@ -130,14 +130,16 @@ class UserCrudController extends AbstractCrudController
             if (!$form->isValid()) {
                 return;
             }
-            $password = $form->get('password')->getData();
-            if ($password === null) {
+            try {
+                $password = $form->get('password')->getData();
+                $user = $this->getUser();
+                assert($user instanceof User);
+                $hash = $this->userPasswordHasher->hashPassword($user, $password);
+                $form->getData()->setPassword($hash);
+            } catch (\Throwable $th) {
                 return;
             }
-            $user = $this->getUser();
-            assert($user instanceof User);
-            $hash = $this->userPasswordHasher->hashPassword($user, $password);
-            $form->getData()->setPassword($hash);
+
         };
     }
 }

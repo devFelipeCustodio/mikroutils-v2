@@ -25,7 +25,7 @@ class UserSession
     #[ORM\Column]
     private ?string $session = null;
 
-    #[ORM\ManyToOne(inversedBy: 'userSessions', cascade: ["remove"])]
+    #[ORM\ManyToOne(inversedBy: 'userSessions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
