@@ -12,6 +12,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class ClientDetailCrudController extends AbstractCrudController
 {
@@ -34,8 +35,7 @@ class ClientDetailCrudController extends AbstractCrudController
         return $actions
             ->remove(Crud::PAGE_INDEX, Action::NEW)
             ->remove(Crud::PAGE_INDEX, Action::EDIT)
-            ->remove(Crud::PAGE_INDEX, Action::DELETE)
-            ->add(Crud::PAGE_INDEX, Action::DETAIL);
+            ->remove(Crud::PAGE_INDEX, Action::DELETE);
     }
 
     public function configureFields(string $pageName): iterable
@@ -46,11 +46,12 @@ class ClientDetailCrudController extends AbstractCrudController
             $hostsMap[$i["hostid"]] = $i["host"];
         };
         return [
+            TextField::new("clientName")->setLabel("Cliente"),
             AssociationField::new('user')
                 ->formatValue(fn(User $user) => $user->getUsername())
                 ->setLabel("Usuário"),
             CollectionField::new('host')
-                ->formatValue(fn ($value) => $hostsMap[$value]),
+                ->formatValue(fn($value) => $hostsMap[$value]),
             DateTimeField::new('created_at')->setLabel("Data da visualização"),
         ];
     }
